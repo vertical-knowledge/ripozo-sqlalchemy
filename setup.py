@@ -11,7 +11,7 @@ with open(path.join(here, 'VERSION')) as f:
     version = f.read().strip()
 
 setup(
-    name='flask-ripozo',
+    name='ripozo-sqlalchemy',
     version=version,
     packages=[], # TODO
     url='',
