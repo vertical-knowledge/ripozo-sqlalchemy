@@ -1,12 +1,19 @@
-__author__ = 'Tim Martin'
-from rest.managers.base import BaseManager, NotFoundException
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from ripozo.exceptions import NotFoundException
+from ripozo.managers.base import BaseManager
+from ripozo.utilities import serialize_fields
+
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class AlchemyManager(BaseManager):
-    db = None  # the database object needs to be given to the class
+    session = None  # the database object needs to be given to the class
     pagination_pk_query_arg = 'page'
 
     def get_field_type(self, name):
@@ -17,8 +24,8 @@ class AlchemyManager(BaseManager):
         model = self.model()
         for name, value in values.iteritems():
             setattr(model, name, value)
-        self.db.session.add(model)
-        self.db.session.commit()
+        self.session.add(model)
+        self.session.commit()
         return self.serialize_model(model)
 
     def retrieve(self, lookup_keys, *args, **kwargs):
@@ -38,9 +45,9 @@ class AlchemyManager(BaseManager):
         q = self.queryset.filter_by(**filters)
         if self.order_by:
             q = q.order_by(self.order_by)
-        q = q.paginate(pagination_pk, pagination_count, False)
+        q = q.limit(pagination_count).offset(pagination_pk)
         model_list = []
-        for m in q.items:
+        for m in q.all():
             model_list.append(self.serialize_model(m))
         next_page = pagination_pk + 1
         query_args = '{0}={1}&{2}={3}'.format(self.pagination_pk_query_arg, next_page,
@@ -53,13 +60,13 @@ class AlchemyManager(BaseManager):
         model = self._get_model(lookup_keys)
         for name, value in updates.iteritems():
             setattr(model, name, value)
-        self.db.session.commit()
+        self.session.commit()
         return self.serialize_model(model)
 
     def delete(self, lookup_keys, *args, **kwargs):
         model = self._get_model(lookup_keys)
-        self.db.session.delete(model)
-        self.db.session.commit()
+        self.session.delete(model)
+        self.session.commit()
 
     @property
     def model_name(self):
@@ -67,7 +74,7 @@ class AlchemyManager(BaseManager):
 
     @property
     def queryset(self):
-        return self.model.query
+        return self.session.query(self.model)
 
     def _get_model(self, lookup_keys):
         """
@@ -86,4 +93,4 @@ class AlchemyManager(BaseManager):
         values = []
         for f in self.fields:
             values.append(getattr(obj, f))
-        return self.serialize_fields(self.fields, values)
+        return serialize_fields(self.fields, values)

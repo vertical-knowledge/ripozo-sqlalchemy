@@ -19,5 +19,6 @@ setup(
     author='Tim Martin',
     author_email='tim.martin@vertical-knowledge.com',
     description='',
-    install_requires=['ripozo', 'SQLAlchemy']
+    install_requires=['ripozo', 'SQLAlchemy'],
+    test_suite="alchemy_tests"
 )
