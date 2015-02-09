@@ -3,14 +3,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from alcehmymanager import AlchemyManager
-from ripozo.exceptions import NotFoundException
 from sqlalchemy import Column, Integer, String, create_engine
+import unittest
+
+from ripozo.exceptions import NotFoundException
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tests.unit.managers.test_manager_common import TestManagerMixin
 
-import unittest
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+
 
 Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
 session = sessionmaker()()

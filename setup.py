@@ -2,23 +2,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from setuptools import setup
-from os import path
+from setuptools import setup, find_packages
 
-here = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, 'VERSION')) as f:
-    version = f.read().strip()
+version = '0.1.0b1'
 
 setup(
     name='ripozo-sqlalchemy',
     version=version,
-    packages=[], # TODO
+    packages=find_packages(exclude=['tests', 'tests.*']),
     url='',
     license='',
     author='Tim Martin',
     author_email='tim.martin@vertical-knowledge.com',
     description='',
     install_requires=['ripozo', 'SQLAlchemy'],
-    test_suite="alchemy_tests"
+    test_suite="tests"
 )
