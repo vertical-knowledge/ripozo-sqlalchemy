@@ -3,5 +3,5 @@ python:
   - "3.4"
   - "2.7"
   - "2.6"
-install: python setup.py install
+install: pip install ripozo, sqlachemy -i http://testpypi.python.org/simple/
 script: python setup.py test

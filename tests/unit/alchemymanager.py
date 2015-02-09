@@ -3,11 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from sqlalchemy import Column, Integer, String, create_engine
-import unittest
-
 from ripozo.exceptions import NotFoundException
 from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tests.helpers.test_manager_common import TestManagerMixin
