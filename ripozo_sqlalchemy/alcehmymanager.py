@@ -84,7 +84,8 @@ class AlchemyManager(BaseManager):
         :param lookup_keys: A dictionary of fields and values on the model to filter by
         :type lookup_keys: dict
         """
-        row = self.queryset.get(lookup_keys.values())
+        pks = six.itervalues(lookup_keys)
+        row = self.queryset.get(list(pks))
         if row is None:
             raise NotFoundException('The model {0} could not be found. '
                                     'lookup_keys: {1}'.format(self.model_name, lookup_keys))
