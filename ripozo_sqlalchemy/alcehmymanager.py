@@ -8,6 +8,7 @@ from ripozo.managers.base import BaseManager
 from ripozo.utilities import serialize_fields
 
 import logging
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class AlchemyManager(BaseManager):
     def create(self, values, *args, **kwargs):
         logger.info('Creating model')
         model = self.model()
-        for name, value in values.iteritems():
+        for name, value in six.iteritems(values):
             setattr(model, name, value)
         self.session.add(model)
         self.session.commit()
@@ -58,7 +59,7 @@ class AlchemyManager(BaseManager):
 
     def update(self, lookup_keys, updates, *args, **kwargs):
         model = self._get_model(lookup_keys)
-        for name, value in updates.iteritems():
+        for name, value in six.iteritems(updates):
             setattr(model, name, value)
         self.session.commit()
         return self.serialize_model(model)
