@@ -41,11 +41,11 @@ class AlchemyManager(BaseManager):
                 pagination_pk = pagination_pk[0]
 
         if pagination_pk is None:
-            pagination_pk = 1
+            pagination_pk = 0
         q = self.queryset.filter_by(**filters)
         if self.order_by:
             q = q.order_by(self.order_by)
-        q = q.limit(pagination_count).offset(pagination_pk)
+        q = q.limit(pagination_count).offset(pagination_pk * pagination_count)
         model_list = []
         for m in q.all():
             model_list.append(self.serialize_model(m))

@@ -7,11 +7,11 @@ from sqlalchemy import Column, Integer, String, create_engine
 import unittest
 
 from ripozo.exceptions import NotFoundException
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from tests.unit.managers.test_manager_common import TestManagerMixin
-
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from tests.helpers.test_manager_common import TestManagerMixin
+from tests.helpers.python2base import TestBase
 
 
 Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
@@ -34,7 +34,7 @@ class PersonManager(AlchemyManager):
     fields = ('id', 'first_name', 'last_name')
 
 
-class TestAlchemyManager(TestManagerMixin, unittest.TestCase):
+class TestAlchemyManager(TestManagerMixin, TestBase):
     @property
     def manager(self):
         return PersonManager()
