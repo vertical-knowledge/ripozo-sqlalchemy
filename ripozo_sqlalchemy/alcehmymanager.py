@@ -24,18 +24,18 @@ class AlchemyManager(BaseManager):
     def get_field_type(cls, name):
         # TODO need to look at the columns for defaults and such
         t = cls.model.metadata.tables[cls.model.__tablename__].columns._data[name].type.python_type
-        if t in six.string_types:
-            return StringField(t)
+        if t in (six.text_type, six.binary_type):
+            return StringField(name)
         elif t is int:
-            return IntegerField(t)
+            return IntegerField(name)
         elif t is float:
-            return FloatField(t)
+            return FloatField(name)
         elif t is datetime:
-            return DateTimeField(t)
+            return DateTimeField(name)
         elif t is bool:
-            return BooleanField(t)
+            return BooleanField(name)
         else:
-            return BaseField(t)
+            return BaseField(name)
 
     def create(self, values, *args, **kwargs):
         logger.info('Creating model')
