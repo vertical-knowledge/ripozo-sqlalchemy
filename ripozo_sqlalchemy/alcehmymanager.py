@@ -3,8 +3,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datetime import datetime
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
+from ripozo.viewsets.fields.base import BaseField
+from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import serialize_fields
 
 import logging
@@ -17,8 +20,22 @@ class AlchemyManager(BaseManager):
     session = None  # the database object needs to be given to the class
     pagination_pk_query_arg = 'page'
 
-    def get_field_type(self, name):
-        return self.model.metadata.tables[self.model.__tablename__].columns._data[name].type.python_type
+    @classmethod
+    def get_field_type(cls, name):
+        # TODO need to look at the columns for defaults and such
+        t = cls.model.metadata.tables[cls.model.__tablename__].columns._data[name].type.python_type
+        if t in six.string_types:
+            return StringField(t)
+        elif t is int:
+            return IntegerField(t)
+        elif t is float:
+            return FloatField(t)
+        elif t is datetime:
+            return DateTimeField(t)
+        elif t is bool:
+            return BooleanField(t)
+        else:
+            return BaseField(t)
 
     def create(self, values, *args, **kwargs):
         logger.info('Creating model')
