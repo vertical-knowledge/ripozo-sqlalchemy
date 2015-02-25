@@ -6,5 +6,5 @@ ripozo-sqlalchemy
     :alt: Travis CI Status
     
 .. image:: https://readthedocs.org/projects/ripozo-sqlalchemy/badge/?version=latest
-    :target: https://readthedocs.org/projects/ripozo-sqlalchemy/?badge=latest
+    :target: http://ripozo-sqlalchemy.readthedocs.org/en/latest/
     :alt: Documentation Status
