@@ -57,3 +57,5 @@ target/
 
 # PyCharm IDE
 .idea/
+
+.eggs/README.txt
