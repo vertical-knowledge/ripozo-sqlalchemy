@@ -3,13 +3,19 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ripozo.viewsets.fields.common import StringField, IntegerField
 from ripozo.exceptions import NotFoundException
+
 from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+
+from ripozo_tests.bases.manager import TestManagerMixin
+from ripozo_tests.python2base import TestBase
+
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from tests.helpers.test_manager_common import TestManagerMixin
-from tests.helpers.python2base import TestBase
+
+import unittest
 
 
 Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
@@ -32,7 +38,7 @@ class PersonManager(AlchemyManager):
     fields = ('id', 'first_name', 'last_name')
 
 
-class TestAlchemyManager(TestManagerMixin, TestBase):
+class TestAlchemyManager(TestManagerMixin, TestBase, unittest.TestCase):
     @property
     def manager(self):
         return PersonManager()
@@ -53,9 +59,9 @@ class TestAlchemyManager(TestManagerMixin, TestBase):
 
     def test_get_field_type(self):
         manager = self.manager
-        self.assertEqual(manager.get_field_type('first_name'), str)
-        self.assertEqual(manager.get_field_type('last_name'), str)
-        self.assertEqual(manager.get_field_type('id'), int)
+        self.assertIsInstance(manager.get_field_type('first_name'), StringField)
+        self.assertIsInstance(manager.get_field_type('last_name'), StringField)
+        self.assertIsInstance(manager.get_field_type('id'), IntegerField)
 
     def test_retrieve_many_pagination_arbitrary_count(self):
         pass # arbitrary count doesn't really make sense

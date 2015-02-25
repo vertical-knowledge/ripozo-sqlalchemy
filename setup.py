@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 
-version = '0.1.0b4'
+version = '0.1.0b5'
 
 setup(
     name='ripozo-sqlalchemy',
@@ -17,6 +17,7 @@ setup(
     author_email='tim.martin@vertical-knowledge.com',
     description='',
     install_requires=['ripozo', 'SQLAlchemy'],
+    tests_require=['tox', 'ripozo-tests'],
     test_suite="tests",
     classifiers=[
         'Development Status :: 3 - Alpha',
