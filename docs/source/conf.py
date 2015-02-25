@@ -49,7 +49,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ripozo-sqlachemy'
+project = u'ripozo-sqlalchemy'
 copyright = u'2015, Tim Martin - Vertical Knowledge'
 
 # The version info for the project you're documenting, acts as replacement for
