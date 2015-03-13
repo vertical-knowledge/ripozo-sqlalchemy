@@ -18,6 +18,18 @@ import six
 logger = logging.getLogger(__name__)
 
 
+def sql_to_json_encoder(obj):
+    # TODO docs and test
+    if isinstance(obj, dict):
+        for key, value in six.iteritems(obj):
+            obj[key] = value
+    elif isinstance(obj, (datetime, date, time, timedelta)):
+        obj = str(obj)
+    elif isinstance(obj, Decimal):
+        obj = float(obj)
+    return obj
+
+
 class AlchemyManager(BaseManager):
     """
     This is the Manager that interops between ripozo
@@ -45,7 +57,7 @@ class AlchemyManager(BaseManager):
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
         # TODO need to look at the columns for defaults and such
-        t = cls.model.metadata.tables[cls.model.__tablename__].columns._data[name].type.python_type
+        t = getattr(cls.model, name).property.columns[0].type.python_type
         if t in (six.text_type, six.binary_type):
             return StringField(name)
         elif t is int:
@@ -197,16 +209,4 @@ class AlchemyManager(BaseManager):
         for f in self.fields:
             values.append(getattr(obj, f))
         return json_encoder(serialize_fields(self.fields, values))
-
-
-def sql_to_json_encoder(obj):
-    # TODO docs and test
-    if isinstance(obj, dict):
-        for key, value in six.iteritems(obj):
-            obj[key] = value
-    elif isinstance(obj, (datetime, date, time, timedelta)):
-        obj = str(obj)
-    elif isinstance(obj, Decimal):
-        obj = float(obj)
-    return obj
 
