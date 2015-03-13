@@ -1,13 +1,29 @@
 ripozo-sqlalchemy
 =================
 
-.. image:: https://travis-ci.org/vertical-knowledge/ripozo-sqlalchemy.svg?branch=master
+.. image:: https://travis-ci.org/vertical-knowledge/ripozo-sqlalchemy.svg?branch=master&style=flat
     :target: https://travis-ci.org/vertical-knowledge/ripozo-sqlalchemy
-    :alt: Travis CI Status
-    
-.. image:: https://readthedocs.org/projects/ripozo-sqlalchemy/badge/?version=latest
+
+.. image:: https://coveralls.io/repos/vertical-knowledge/ripozo-sqlalchemy/badge.svg?branch=master&style=flat
+  :target: https://coveralls.io/r/vertical-knowledge/ripozo-sqlalchemy?branch=master
+
+.. image:: https://readthedocs.org/projects/ripozo-sqlalchemy/badge/?version=latest&style=flat
     :target: https://ripozo-sqlalchemy.readthedocs.org/
     :alt: Documentation Status
+
+.. image:: https://pypip.in/version/ripozo-sqlalchemy/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
+
+.. image:: https://pypip.in/d/ripozo-sqlalchemy/badge.png?style=flat
+    :target: https://crate.io/packages/ripozo-sqlalchemy/
+    :alt: Number of PyPI downloads
+
+.. image:: https://pypip.in/wheel/ripozo-sqlalchemy/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
+    :alt: Wheel Status
+
+.. image:: https://pypip.in/py_versions/ripozo-sqlalchemy/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
     
 This package is a ripozo extension that provides a Manager that integrate
 SQLAlchemy with ripozo.  It provides convience functions for generating resources.
