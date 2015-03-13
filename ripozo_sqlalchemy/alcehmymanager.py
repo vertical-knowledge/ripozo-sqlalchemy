@@ -3,7 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
+from decimal import Decimal
+
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.base import BaseField
@@ -190,8 +192,21 @@ class AlchemyManager(BaseManager):
                                     'lookup_keys: {1}'.format(self.model_name, lookup_keys))
         return row
 
-    def serialize_model(self, obj):
+    def serialize_model(self, obj, json_encoder=sql_to_json_encoder):
         values = []
         for f in self.fields:
             values.append(getattr(obj, f))
-        return serialize_fields(self.fields, values)
+        return json_encoder(serialize_fields(self.fields, values))
+
+
+def sql_to_json_encoder(obj):
+    # TODO docs and test
+    if isinstance(obj, dict):
+        for key, value in six.iteritems(obj):
+            obj[key] = value
+    elif isinstance(obj, (datetime, date, time, timedelta)):
+        obj = str(obj)
+    elif isinstance(obj, Decimal):
+        obj = float(obj)
+    return obj
+
