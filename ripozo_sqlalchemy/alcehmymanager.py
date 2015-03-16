@@ -10,7 +10,7 @@ from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
-from ripozo.utilities import serialize_fields
+from ripozo.utilities import serialize_fields, classproperty
 
 import logging
 import six
@@ -43,6 +43,20 @@ class AlchemyManager(BaseManager):
     """
     session = None  # the database object needs to be given to the class
     pagination_pk_query_arg = 'page'
+    all_fields = False
+
+    @classproperty
+    def fields(cls):
+        """
+        :return: Returns the _fields attribute if it is available.  If it
+            is not and the cls.all_fields attribute is set to True,
+            then it will return all of the columns names on the model.
+            Otherwise it will return an empty list
+        :rtype: list
+        """
+        if not cls._fields and cls.all_fields is True:
+            return list(cls.model._sa_class_manager)
+        return cls._fields or []
 
     @classmethod
     def get_field_type(cls, name):
