@@ -232,12 +232,15 @@ class AlchemyManager(BaseManager):
         :param lookup_keys: A dictionary of fields and values on the model to filter by
         :type lookup_keys: dict
         """
-        pks = six.itervalues(lookup_keys)
-        row = self.queryset.get(list(pks))
-        if row is None:
+        q = self.queryset
+        for pk_name, value in six.iteritems(lookup_keys):
+            column = getattr(self.model, pk_name)
+            q = q.filter(column==1)
+        row = q.limit(1).all()
+        if not row:
             raise NotFoundException('The model {0} could not be found. '
                                     'lookup_keys: {1}'.format(self.model_name, lookup_keys))
-        return row
+        return row[0]
 
     def serialize_model(self, obj, json_encoder=sql_to_json_encoder):
         # TODO this could be very expensive because of the multiple queries
