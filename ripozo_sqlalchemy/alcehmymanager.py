@@ -12,6 +12,8 @@ from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import serialize_fields, classproperty
 
+from sqlalchemy.orm.query import Query
+
 import logging
 import six
 
@@ -71,7 +73,10 @@ class AlchemyManager(BaseManager):
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
         # TODO need to look at the columns for defaults and such
-        t = getattr(cls.model, name).property.columns[0].type.python_type
+        try:
+            t = getattr(cls.model, name).property.columns[0].type.python_type
+        except AttributeError:  # It's a relationship
+            t = getattr(cls.model, name).property.local_columns.pop().type.python_type
         if t in (six.text_type, six.binary_type):
             return StringField(name)
         elif t is int:
@@ -195,6 +200,18 @@ class AlchemyManager(BaseManager):
         return self.model.__name__
 
     @property
+    def _model_fields_and_joins(self):
+        # TODO docs
+        model_fields = []
+        joins = []
+        for f in self.fields:
+            column = getattr(self.model, f)
+            if hasattr(column, 'mapper'):
+                joins.append(column)
+            model_fields.append(getattr(self.model, f))
+        return model_fields, joins
+
+    @property
     def queryset(self):
         """
         The queryset to use when looking for models.
@@ -202,7 +219,11 @@ class AlchemyManager(BaseManager):
         This is advantageous to override if you only
         want a subset of the model specified.
         """
-        return self.session.query(self.model)
+        model_fields, joins = self._model_fields_and_joins
+        q = self.session.query(*model_fields)
+        for j in joins:
+            q = q.outerjoin(j)
+        return q
 
     def _get_model(self, lookup_keys):
         """
@@ -219,8 +240,13 @@ class AlchemyManager(BaseManager):
         return row
 
     def serialize_model(self, obj, json_encoder=sql_to_json_encoder):
+        # TODO this could be very expensive because of the multiple queries
+        # Need to find a way to get all of the values immediately
         values = []
         for f in self.fields:
-            values.append(getattr(obj, f))
+            val = getattr(obj, f)
+            if isinstance(val, Query):
+                val = val.all()
+            values.append(val)
         return json_encoder(serialize_fields(self.fields, values))
 
