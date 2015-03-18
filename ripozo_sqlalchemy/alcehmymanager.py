@@ -148,7 +148,7 @@ class AlchemyManager(BaseManager):
 
         if pagination_pk is None:
             pagination_pk = 0
-        q = self.queryset.filter_by(**filters)
+        q = self._filter_by(filters)
         if self.order_by:
             q = q.order_by(self.order_by)
         q = q.limit(pagination_count).offset(pagination_pk * pagination_count)
@@ -232,15 +232,20 @@ class AlchemyManager(BaseManager):
         :param lookup_keys: A dictionary of fields and values on the model to filter by
         :type lookup_keys: dict
         """
-        q = self.queryset
-        for pk_name, value in six.iteritems(lookup_keys):
-            column = getattr(self.model, pk_name)
-            q = q.filter(column==1)
+        q = self._filter_by(lookup_keys)
         row = q.limit(1).all()
         if not row:
             raise NotFoundException('The model {0} could not be found. '
                                     'lookup_keys: {1}'.format(self.model_name, lookup_keys))
         return row[0]
+
+    def _filter_by(self, filters):
+        # TODO docs and test
+        q = self.queryset
+        for pk_name, value in six.iteritems(filters):
+            column = getattr(self.model, pk_name)
+            q = q.filter(column==value)
+        return q
 
     def serialize_model(self, obj, json_encoder=sql_to_json_encoder):
         # TODO this could be very expensive because of the multiple queries
