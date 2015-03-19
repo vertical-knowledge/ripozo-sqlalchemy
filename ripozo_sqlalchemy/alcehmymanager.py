@@ -25,9 +25,9 @@ def sql_to_json_encoder(obj):
     # TODO docs and test
     if isinstance(obj, dict):
         for key, value in six.iteritems(obj):
-            obj[key] = value
+            obj[key] = sql_to_json_encoder(value)
     elif isinstance(obj, (datetime, date, time, timedelta)):
-        obj = str(obj)
+        obj = six.text_type(obj)
     elif isinstance(obj, Decimal):
         obj = float(obj)
     return obj
@@ -195,14 +195,6 @@ class AlchemyManager(BaseManager):
         model = self._get_model(lookup_keys)
         model.delete()
         self.session.commit()
-
-    @property
-    def model_name(self):
-        """
-        Returns the name of the model.
-        It is simply the class name for the SQLAlchemy Model
-        """
-        return self.model.__name__
 
     @property
     def _model_fields_and_joins(self):
