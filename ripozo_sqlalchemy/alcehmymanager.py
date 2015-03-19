@@ -109,7 +109,8 @@ class AlchemyManager(BaseManager):
         logger.info('Creating model')
         model = self.model()
         for name, value in six.iteritems(values):
-            setattr(model, name, value)
+            if name in self.fields:  # Only fields that are explicitly available are included
+                setattr(model, name, value)
         self.session.add(model)
         self.session.commit()
         return self.serialize_model(model)
@@ -176,13 +177,9 @@ class AlchemyManager(BaseManager):
             on the model for the the fields attribute on the class
         :rtype:
         """
-        self._all_primary_keys_exist(lookup_keys)
-        model = self._get_model(lookup_keys)
-        # for name, value in six.iteritems(updates):
-        #     setattr(model, name, value)
-        model.update(updates)
+        model = self.session.query(self.model).filter_by(**lookup_keys).update(updates)
         self.session.commit()
-        return self.serialize_model(model.first())
+        return self.retrieve(lookup_keys)
 
     def delete(self, lookup_keys, *args, **kwargs):
         """
