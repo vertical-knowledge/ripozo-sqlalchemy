@@ -12,6 +12,7 @@ from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import serialize_fields, classproperty
 
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm.query import Query
 
 import logging
@@ -126,7 +127,8 @@ class AlchemyManager(BaseManager):
             fields attrbute on the class
         :rtype: dict
         """
-        return self.serialize_model(self._get_model(lookup_keys))
+        model = self._get_model(lookup_keys).first()
+        return self.serialize_model(model)
 
     def retrieve_list(self, filters, *args, **kwargs):
         """
@@ -174,11 +176,13 @@ class AlchemyManager(BaseManager):
             on the model for the the fields attribute on the class
         :rtype:
         """
+        self._all_primary_keys_exist(lookup_keys)
         model = self._get_model(lookup_keys)
-        for name, value in six.iteritems(updates):
-            setattr(model, name, value)
+        # for name, value in six.iteritems(updates):
+        #     setattr(model, name, value)
+        model.update(updates)
         self.session.commit()
-        return self.serialize_model(model)
+        return self.serialize_model(model.first())
 
     def delete(self, lookup_keys, *args, **kwargs):
         """
@@ -187,8 +191,9 @@ class AlchemyManager(BaseManager):
 
         :param dict lookup_keys: The keys to find the model with
         """
+        self._all_primary_keys_exist(lookup_keys)
         model = self._get_model(lookup_keys)
-        self.session.delete(model)
+        model.delete()
         self.session.commit()
 
     @property
@@ -225,6 +230,12 @@ class AlchemyManager(BaseManager):
             q = q.outerjoin(j)
         return q
 
+    def _all_primary_keys_exist(self, lookup_keys):
+        pks = (pk.name for pk in inspect(self.model).primary_key)
+        for pk in pks:
+            if pk not in lookup_keys:
+                raise NotFoundException('Not all primary keys ({0}) were provided ({1})'.format(pks, lookup_keys))
+
     def _get_model(self, lookup_keys):
         """
         Gets the model specified by the lookupkeys
@@ -232,12 +243,7 @@ class AlchemyManager(BaseManager):
         :param lookup_keys: A dictionary of fields and values on the model to filter by
         :type lookup_keys: dict
         """
-        q = self._filter_by(lookup_keys)
-        row = q.limit(1).all()
-        if not row:
-            raise NotFoundException('The model {0} could not be found. '
-                                    'lookup_keys: {1}'.format(self.model_name, lookup_keys))
-        return row[0]
+        return self._filter_by(lookup_keys)
 
     def _filter_by(self, filters):
         # TODO docs and test
