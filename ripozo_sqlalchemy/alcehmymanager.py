@@ -129,6 +129,9 @@ class AlchemyManager(BaseManager):
         :rtype: dict
         """
         model = self._get_model(lookup_keys).first()
+        if not model:
+            raise NotFoundException('The model with name {0} could not be found '
+                                    'with lookup keys {1}'.format(self.model.__name__, lookup_keys))
         return self.serialize_model(model)
 
     def retrieve_list(self, filters, *args, **kwargs):

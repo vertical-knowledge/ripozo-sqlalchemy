@@ -1,7 +1,7 @@
 0.1.2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- NotFoundException raised when retrieve is called and no model is found.
 
 
 0.1.1 (2015-03-15)
