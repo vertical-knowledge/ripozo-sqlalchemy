@@ -1,4 +1,4 @@
-0.1.2 (unreleased)
+0.1.2 (2015-03-24)
 ==================
 
 - NotFoundException raised when retrieve is called and no model is found.
