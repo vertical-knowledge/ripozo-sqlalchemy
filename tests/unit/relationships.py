@@ -19,7 +19,7 @@ import unittest
 
 
 def random_string():
-    return ''.join(random.choice(string.letters) for _ in range(20))
+    return ''.join(random.choice(string.ascii_letters) for _ in range(20))
 
 
 class TestOneToManyRelationship(CommonTest, unittest.TestCase):
@@ -28,7 +28,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         return {'id': IntegerField, 'value': StringField, 'manies.id': IntegerField}
 
     def get_fake_values(self):
-        return dict(value=''.join(random.choice(string.letters) for _ in range(20)))
+        return dict(value=''.join(random.choice(string.ascii_letters) for _ in range(20)))
 
     def setUp(self):
         self.Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))

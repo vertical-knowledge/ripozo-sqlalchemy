@@ -88,13 +88,13 @@ class TestColumnTypes(CommonTest, unittest.TestCase):
             numeric=random.choice(range(0, 100)),
             pickle_type=dict(a=1, b=2),
             small_integer=random.choice(range(0, 100)),
-            string=''.join(random.choice(string.letters) for _ in range(0, 100)),
-            text=''.join(random.choice(string.letters) for _ in range(0, 100)),
+            string=''.join(random.choice(string.ascii_letters) for _ in range(0, 100)),
+            text=''.join(random.choice(string.ascii_letters) for _ in range(0, 100)),
             time=time(hour=10),
             date_time=datetime.now(),
-            unicode=''.join(random.choice(string.letters) for _ in range(0, 100)),
-            unicode_text=''.join(random.choice(string.letters) for _ in range(0, 100)),
-            large_binary=''.join(random.choice(string.letters) for _ in range(0, 100))
+            unicode=''.join(random.choice(string.ascii_letters) for _ in range(0, 100)),
+            unicode_text=''.join(random.choice(string.ascii_letters) for _ in range(0, 100)),
+            large_binary=''.join(random.choice(string.ascii_letters) for _ in range(0, 100))
         )
 
 
