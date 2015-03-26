@@ -10,9 +10,9 @@ from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
-from ripozo.utilities import serialize_fields, classproperty
+from ripozo.utilities import classproperty
 
-from sqlalchemy.inspection import inspect
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 
 import logging
@@ -48,6 +48,10 @@ class AlchemyManager(BaseManager):
     pagination_pk_query_arg = 'page'
     all_fields = False
 
+    def __init__(self, *args, **kwargs):
+        super(AlchemyManager, self).__init__(*args, **kwargs)
+        self._field_dict = None
+
     @classproperty
     def fields(cls):
         """
@@ -78,13 +82,16 @@ class AlchemyManager(BaseManager):
             t = getattr(cls.model, name).property.columns[0].type.python_type
         except AttributeError:  # It's a relationship
             t = getattr(cls.model, name).property.local_columns.pop().type.python_type
+        except NotImplementedError:
+            # This is for pickle type columns.
+            t = object
         if t in (six.text_type, six.binary_type):
             return StringField(name)
         elif t is int:
             return IntegerField(name)
-        elif t is float:
+        elif t in (float, Decimal,):
             return FloatField(name)
-        elif t is datetime:
+        elif t in (datetime, date, timedelta, time):
             return DateTimeField(name)
         elif t is bool:
             return BooleanField(name)
@@ -92,25 +99,7 @@ class AlchemyManager(BaseManager):
             return BaseField(name)
 
     def create(self, values, *args, **kwargs):
-        """
-        Creates a new model of the type specified for the manager.
-        The values of the model correspond to the dictionary values
-        that maps the fields and values to set on the new model.
-        Automatically commits the model.
-
-        :param dict values: The values of the new model that is
-            being created
-        :return: The newly created SQLAlchemy Model serialized
-            into a dictionary.  The dictionary keys will be the
-            fields specified in the fields attribute on the class
-            and the values will be the newly created models values.
-        :rtype: dict
-        """
-        logger.info('Creating model')
-        model = self.model()
-        for name, value in six.iteritems(values):
-            if name in self.fields:  # Only fields that are explicitly available are included
-                setattr(model, name, value)
+        model = self._set_values_on_model(self.model(), values)
         self.session.add(model)
         self.session.commit()
         return self.serialize_model(model)
@@ -128,85 +117,41 @@ class AlchemyManager(BaseManager):
             fields attrbute on the class
         :rtype: dict
         """
-        model = self._get_model(lookup_keys).first()
-        if not model:
-            raise NotFoundException('The model with name {0} could not be found '
-                                    'with lookup keys {1}'.format(self.model.__name__, lookup_keys))
+        model = self._get_model(lookup_keys)
         return self.serialize_model(model)
 
     def retrieve_list(self, filters, *args, **kwargs):
-        """
-        Gets a list of models that match the filters provided.
+        q = self.queryset
+        pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
+        pagination_pk = filters.pop(self.pagination_pk_query_arg, 0)
+        if pagination_pk:
+            q = q.offset(pagination_pk * pagination_count)
+        if pagination_count:
+            q = q.limit(pagination_count + 1)
 
-        :param dict filters: A dictionary of values to match on
-            in order to return a list of values.
-        :return: A tuple, The first value is a list of the serialized models
-            and a dictionary of metadata as the second value in the tuple.
-        :rtype: tuple
-        """
-        pagination_count, filters = self.get_pagination_count(filters)
-        pagination_pk, filters = self.get_pagination_pks(filters)
-        if isinstance(pagination_pk, (list, tuple)):
-            if len(pagination_pk) == 0:
-                pagination_pk = None
-            else:
-                pagination_pk = pagination_pk[0]
+        count = q.count()
+        next = None
+        previous = None
+        if count > pagination_count:
+            next = {self.pagination_pk_query_arg: pagination_pk + 1,
+                    self.pagination_count_query_arg: pagination_count}
+        if pagination_pk > 0:
+            previous = {self.pagination_pk_query_arg: pagination_pk - 1,
+                        self.pagination_count_query_arg: pagination_count}
 
-        if pagination_pk is None:
-            pagination_pk = 0
-        q = self._filter_by(filters)
-        if self.order_by:
-            q = q.order_by(self.order_by)
-        q = q.limit(pagination_count).offset(pagination_pk * pagination_count)
-        model_list = []
-        for m in q.all():
-            model_list.append(self.serialize_model(m))
-        next_page = pagination_pk + 1
-        query_args = '{0}={1}&{2}={3}'.format(self.pagination_pk_query_arg, next_page,
-                                              self.pagination_count_query_arg, pagination_count)
-        return model_list, {self.pagination_pk_query_arg: next_page,
-                            self.pagination_count_query_arg: pagination_count,
-                            self.pagination_next: query_args}
+        return self.serialize_model(q[:pagination_count]), dict(next=next, previous=previous)
 
     def update(self, lookup_keys, updates, *args, **kwargs):
-        """
-        Updates a SQLAlchemy model and returns the update, serialized model
-
-        :param dict lookup_keys: The keys for finding the model.  Typically this
-            would be a dictionary of the primary key names and their associated values
-        :param dict updates: a dictionary of the fields to update the values to set
-            them as.
-        :return: A serialized SQLAlchemy model that only returns the values
-            on the model for the the fields attribute on the class
-        :rtype:
-        """
-        model = self.session.query(self.model).filter_by(**lookup_keys).update(updates)
-        self.session.commit()
-        return self.retrieve(lookup_keys)
+        model = self._get_model(lookup_keys)
+        model = self._set_values_on_model(model, updates)
+        return self.serialize_model(model)
 
     def delete(self, lookup_keys, *args, **kwargs):
-        """
-        Deletes the model from the SQLAlchemy Model
-        for the model found by the lookup_keys
-
-        :param dict lookup_keys: The keys to find the model with
-        """
-        self._all_primary_keys_exist(lookup_keys)
         model = self._get_model(lookup_keys)
-        model.delete()
+        self.session.delete(model)
         self.session.commit()
+        return {}
 
-    @property
-    def _model_fields_and_joins(self):
-        # TODO docs
-        model_fields = []
-        joins = []
-        for f in self.fields:
-            column = getattr(self.model, f)
-            if hasattr(column, 'mapper'):
-                joins.append(column)
-            model_fields.append(getattr(self.model, f))
-        return model_fields, joins
 
     @property
     def queryset(self):
@@ -216,43 +161,54 @@ class AlchemyManager(BaseManager):
         This is advantageous to override if you only
         want a subset of the model specified.
         """
-        model_fields, joins = self._model_fields_and_joins
-        q = self.session.query(*model_fields)
-        for j in joins:
-            q = q.outerjoin(j)
-        return q
+        return self.session.query(self.model)
 
-    def _all_primary_keys_exist(self, lookup_keys):
-        pks = (pk.name for pk in inspect(self.model).primary_key)
-        for pk in pks:
-            if pk not in lookup_keys:
-                raise NotFoundException('Not all primary keys ({0}) were provided ({1})'.format(pks, lookup_keys))
+    def serialize_model(self, model, field_dict=None):
+        field_dict = field_dict or self.field_dict
+
+        if isinstance(model, Query):
+            model = model.all()
+
+        if isinstance(model, (list, set)):
+            model_list = []
+            for m in model:
+                model_list.append(self.serialize_model(m, field_dict=field_dict))
+            return model_list
+
+        model_dict = {}
+        for name, sub in six.iteritems(field_dict):
+            value = getattr(model, name)
+            if sub:
+                value = self.serialize_model(value, field_dict=sub)
+            model_dict[name] = value
+        return model_dict
+
+    @property
+    def field_dict(self):
+        if self._field_dict is None:
+            field_dict = {}
+            for f in self.fields:
+                field_parts = f.split('.')
+                current = field_dict
+                part = field_parts.pop(0)
+                while len(field_parts) > 0:
+                    current[part] = current.get(part, dict())
+                    current = current[part]
+                    part = field_parts.pop(0)
+                current[part] = None
+            self._field_dict = field_dict
+        return self._field_dict
 
     def _get_model(self, lookup_keys):
-        """
-        Gets the model specified by the lookupkeys
+        try:
+            return self.queryset.filter_by(**lookup_keys).one()
+        except NoResultFound:
+            raise NotFoundException('No model of type {0} was found using '
+                                    'lookup_keys {1}'.format(self.model.__name__, lookup_keys))
 
-        :param lookup_keys: A dictionary of fields and values on the model to filter by
-        :type lookup_keys: dict
-        """
-        return self._filter_by(lookup_keys)
-
-    def _filter_by(self, filters):
-        # TODO docs and test
-        q = self.queryset
-        for pk_name, value in six.iteritems(filters):
-            column = getattr(self.model, pk_name)
-            q = q.filter(column==value)
-        return q
-
-    def serialize_model(self, obj, json_encoder=sql_to_json_encoder):
-        # TODO this could be very expensive because of the multiple queries
-        # Need to find a way to get all of the values immediately
-        values = []
-        for f in self.fields:
-            val = getattr(obj, f)
-            if isinstance(val, Query):
-                val = val.all()
-            values.append(val)
-        return json_encoder(serialize_fields(self.fields, values))
-
+    def _set_values_on_model(self, model, values):
+        for name, val in six.iteritems(values):
+            if name not in self.fields:
+                continue
+            setattr(model, name, val)
+        return model

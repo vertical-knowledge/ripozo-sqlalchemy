@@ -42,7 +42,7 @@ class PersonManager(AlchemyManager):
     fields = ('id', 'first_name', 'last_name')
 
 
-class TestAlchemyManager(TestManagerMixin, TestBase, unittest.TestCase):
+class TestAlchemyManager(TestBase, unittest.TestCase):
     @property
     def manager(self):
         return PersonManager()
