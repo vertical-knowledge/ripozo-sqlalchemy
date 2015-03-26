@@ -3,13 +3,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from ripozo.viewsets.fields.common import IntegerField, StringField
 
-from ripozo_tests.python2base import TestBase
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
 
 from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+
+from tests.unit.common import CommonTest
 
 import random
 import string
@@ -20,7 +22,14 @@ def random_string():
     return ''.join(random.choice(string.letters) for _ in range(20))
 
 
-class TestOneToManyRelationship(TestBase, unittest.TestCase):
+class TestOneToManyRelationship(CommonTest, unittest.TestCase):
+    @property
+    def field_dict(self):
+        return {'id': IntegerField, 'value': StringField, 'manies.id': IntegerField}
+
+    def get_fake_values(self):
+        return dict(value=''.join(random.choice(string.letters) for _ in range(20)))
+
     def setUp(self):
         self.Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
         self.session = sessionmaker()()
@@ -36,6 +45,14 @@ class TestOneToManyRelationship(TestBase, unittest.TestCase):
             id = Column(Integer, primary_key=True)
             many_value = Column(String(length=50))
             one_id = Column(Integer, ForeignKey('one.id'))
+
+        class DefaultManager(AlchemyManager):
+            session = self.session
+            model = One
+            _fields = ['id', 'value', 'manies.id']
+
+        self.model = One
+        self._manager = DefaultManager
 
         self.One = One
         self.Many = Many
@@ -168,6 +185,14 @@ class TestOneToManyRelationshipLazy(TestOneToManyRelationship):
             id = Column(Integer, primary_key=True)
             many_value = Column(String(length=50))
             one_id = Column(Integer, ForeignKey('one.id'))
+
+        class DefaultManager(AlchemyManager):
+            session = self.session
+            model = One
+            _fields = ['id', 'value', 'manies.id']
+
+        self.model = One
+        self._manager = DefaultManager
 
         self.One = One
         self.Many = Many

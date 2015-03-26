@@ -12,8 +12,10 @@ from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import classproperty
 
+from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
+from sqlalchemy.orm.relationships import RelationshipProperty
 
 import logging
 import six
@@ -62,8 +64,28 @@ class AlchemyManager(BaseManager):
         :rtype: list
         """
         if not cls._fields and cls.all_fields is True:
-            return list(cls.model._sa_class_manager)
+            fields = []
+            for name in cls.model._sa_class_manager:
+                prop = getattr(cls.model, name)
+                if isinstance(prop.property, RelationshipProperty):
+                    for pk in class_mapper(prop.class_).primary_key:
+                        fields.append('{0}.{1}'.format(name, pk.name))
+                else:
+                    fields.append(name)
+            cls._fields = fields
         return cls._fields or []
+
+    @staticmethod
+    def _get_field_python_type(model, name):
+        try:
+            return getattr(model, name).property.columns[0].type.python_type
+        except AttributeError:  # It's a relationship
+            parts = name.split('.')
+            model = getattr(model, parts.pop(0)).comparator.mapper.class_
+            return AlchemyManager._get_field_python_type(model, '.'.join(parts))
+        except NotImplementedError:
+            # This is for pickle type columns.
+            return object
 
     @classmethod
     def get_field_type(cls, name):
@@ -77,14 +99,7 @@ class AlchemyManager(BaseManager):
             translating a string input into the appropriate format.
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
-        # TODO need to look at the columns for defaults and such
-        try:
-            t = getattr(cls.model, name).property.columns[0].type.python_type
-        except AttributeError:  # It's a relationship
-            t = getattr(cls.model, name).property.local_columns.pop().type.python_type
-        except NotImplementedError:
-            # This is for pickle type columns.
-            t = object
+        t = cls._get_field_python_type(cls.model, name)
         if t in (six.text_type, six.binary_type):
             return StringField(name)
         elif t is int:
