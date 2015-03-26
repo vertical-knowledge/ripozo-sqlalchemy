@@ -113,6 +113,7 @@ class CommonTest(TestBase):
         model = self.create(values=original_values)
         new_values = self.get_fake_values()
         response = self.manager.update(dict(id=model.id), new_values)
+        self.session.refresh(model)
         self.assertResponseEqualsModel(model, self.manager, response)
 
         not_equal = False
@@ -140,6 +141,7 @@ class CommonTest(TestBase):
         model = self.create(values=values)
         values['fake'] = 'nope'
         response = self.manager.update(dict(id=model.id), values)
+        self.session.refresh(model)
         if 'fake' in response:
             assert False
         self.assertRaises(AttributeError, getattr, model, 'fake')

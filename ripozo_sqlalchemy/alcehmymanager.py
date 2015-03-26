@@ -159,6 +159,7 @@ class AlchemyManager(BaseManager):
     def update(self, lookup_keys, updates, *args, **kwargs):
         model = self._get_model(lookup_keys)
         model = self._set_values_on_model(model, updates)
+        self.session.commit()
         return self.serialize_model(model)
 
     def delete(self, lookup_keys, *args, **kwargs):
