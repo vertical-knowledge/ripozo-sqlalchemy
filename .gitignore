@@ -62,3 +62,6 @@ target/
 
 # Don't want to commit this
 setup.cfg
+
+# Performance testing stuff
+*.profile

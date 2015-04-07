@@ -81,11 +81,15 @@ class AlchemyManager(BaseManager):
             return getattr(model, name).property.columns[0].type.python_type
         except AttributeError:  # It's a relationship
             parts = name.split('.')
-            model = getattr(model, parts.pop(0)).comparator.mapper.class_
-            return AlchemyManager._get_field_python_type(model, '.'.join(parts))
+            try:
+                model = getattr(model, parts.pop(0)).comparator.mapper.class_
+                return AlchemyManager._get_field_python_type(model, '.'.join(parts))
+            except AttributeError:
+                return object  # TODO Fuck it
         except NotImplementedError:
             # This is for pickle type columns.
             return object
+
 
     @classmethod
     def get_field_type(cls, name):
@@ -168,6 +172,29 @@ class AlchemyManager(BaseManager):
         self.session.commit()
         return {}
 
+    def _get_model_attributes(self):
+        attributes = []
+        joins = []
+        for field in self.fields:
+            attr, join = self._get_attr(field)
+            if join:
+                joins.append(join)
+            attributes.append(attr)
+        return attributes, joins
+
+    def _get_attr(self, field_name):
+        parts = field_name.split('.')
+        field = getattr(self.model, parts.pop(0))
+        join = None
+        for f in parts:
+            if hasattr(field.comparator, 'mapper'):
+                join = field.comparator.mapper.class_
+                field = getattr(field.comparator.mapper.class_, f)
+            else:
+                return getattr(field, f), join
+            pass
+        return field, join
+
 
     @property
     def queryset(self):
@@ -177,10 +204,20 @@ class AlchemyManager(BaseManager):
         This is advantageous to override if you only
         want a subset of the model specified.
         """
-        return self.session.query(self.model)
+        attrs, joins = self._get_model_attributes()
+        q = self.session.query(*attrs)
+        for j in joins:
+            q = q.outerjoin(j)
+        return j
 
     def serialize_model(self, model, field_dict=None):
+        response = self._serialize_model_helper(model, field_dict=field_dict)
+        return sql_to_json_encoder(response)
+
+    def _serialize_model_helper(self, model, field_dict=None):
         field_dict = field_dict or self.field_dict
+        if model is None:
+            return None
 
         if isinstance(model, Query):
             model = model.all()
