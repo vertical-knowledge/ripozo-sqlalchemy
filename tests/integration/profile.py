@@ -32,7 +32,6 @@ session = sessionmaker()()
 def profileit(func):
     """
     Decorator straight up stolen from stackoverflow
-    `
     """
     def wrapper(*args, **kwargs):
         datafn = func.__name__ + ".profile" # Name the data file sensibly

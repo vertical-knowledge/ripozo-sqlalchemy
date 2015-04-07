@@ -158,7 +158,8 @@ class AlchemyManager(BaseManager):
             previous = {self.pagination_pk_query_arg: pagination_pk - 1,
                         self.pagination_count_query_arg: pagination_count}
 
-        return self.serialize_model(q[:pagination_count]), dict(next=next, previous=previous)
+        props = self.serialize_model(q[:pagination_count], field_dict=self.field_dict(self.list_fields))
+        return props, dict(next=next, previous=previous)
 
     def update(self, lookup_keys, updates, *args, **kwargs):
         model = self._get_model(lookup_keys)
@@ -204,18 +205,19 @@ class AlchemyManager(BaseManager):
         This is advantageous to override if you only
         want a subset of the model specified.
         """
-        attrs, joins = self._get_model_attributes()
-        q = self.session.query(*attrs)
-        for j in joins:
-            q = q.outerjoin(j)
-        return j
+        # attrs, joins = self._get_model_attributes()
+        # q = self.session.query(*attrs)
+        # for j in joins:
+        #     q = q.outerjoin(j)
+        # return q
+        return self.session.query(self.model)
 
     def serialize_model(self, model, field_dict=None):
         response = self._serialize_model_helper(model, field_dict=field_dict)
         return sql_to_json_encoder(response)
 
     def _serialize_model_helper(self, model, field_dict=None):
-        field_dict = field_dict or self.field_dict
+        field_dict = field_dict or self.field_dict()
         if model is None:
             return None
 
@@ -236,21 +238,19 @@ class AlchemyManager(BaseManager):
             model_dict[name] = value
         return model_dict
 
-    @property
-    def field_dict(self):
-        if self._field_dict is None:
-            field_dict = {}
-            for f in self.fields:
-                field_parts = f.split('.')
-                current = field_dict
+    def field_dict(self, fields=None):
+        field_dict = {}
+        fields = fields or self.fields
+        for f in fields:
+            field_parts = f.split('.')
+            current = field_dict
+            part = field_parts.pop(0)
+            while len(field_parts) > 0:
+                current[part] = current.get(part, dict())
+                current = current[part]
                 part = field_parts.pop(0)
-                while len(field_parts) > 0:
-                    current[part] = current.get(part, dict())
-                    current = current[part]
-                    part = field_parts.pop(0)
-                current[part] = None
-            self._field_dict = field_dict
-        return self._field_dict
+            current[part] = None
+        return field_dict
 
     def _get_model(self, lookup_keys):
         try:
