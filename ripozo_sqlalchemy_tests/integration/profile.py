@@ -40,7 +40,10 @@ def profileit(func):
         retval = prof.runcall(func, *args, **kwargs)
         prof.disable()
         stats = pstats.Stats(prof)
-        stats.sort_stats('cumtime').print_stats()
+        try:
+            stats.sort_stats('cumtime').print_stats()
+        except KeyError:
+            pass  # breaks in python 2.6
         return retval
 
     return wrapper

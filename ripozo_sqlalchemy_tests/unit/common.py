@@ -7,6 +7,8 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 from datetime import datetime, date, timedelta, time
 
+from decimal import Decimal
+
 from ripozo.exceptions import NotFoundException
 
 from ripozo_tests.python2base import TestBase
@@ -42,6 +44,8 @@ class CommonTest(TestBase):
                     model_value = model_value.strftime('%Y-%m-%d %H:%M:%S.%f')
                 elif isinstance(model_value, (date, time,timedelta,)):
                     model_value = six.text_type(model_value)
+                elif isinstance(model_value, Decimal):
+                    model_value = float(model_value)
                 self.assertEqual(model_value, response[name])
         except:
             raise
