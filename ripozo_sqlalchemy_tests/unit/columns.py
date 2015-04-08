@@ -19,7 +19,7 @@ from sqlalchemy.types import BigInteger, Boolean, Date, DateTime,\
     Enum, Float, Integer, Interval, LargeBinary, Numeric, PickleType,\
     SchemaType, SmallInteger, String, Text, Time, Unicode, UnicodeText
 
-from tests.unit.common import CommonTest
+from ripozo_sqlalchemy_tests.unit.common import CommonTest
 
 import logging
 import random

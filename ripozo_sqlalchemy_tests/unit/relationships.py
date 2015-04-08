@@ -11,7 +11,7 @@ from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
-from tests.unit.common import CommonTest
+from ripozo_sqlalchemy_tests.unit.common import CommonTest
 
 import random
 import string

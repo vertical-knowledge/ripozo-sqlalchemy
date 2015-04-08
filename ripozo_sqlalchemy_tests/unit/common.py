@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 
+from datetime import datetime, date, timedelta, time
+
 from ripozo.exceptions import NotFoundException
 
 from ripozo_tests.python2base import TestBase
@@ -36,6 +38,10 @@ class CommonTest(TestBase):
                 model_value = getattr(model, name)
                 if isinstance(model_value, Query):
                     model_value = model_value.all()
+                elif isinstance(model_value, datetime):
+                    model_value = model_value.strftime('%Y-%m-%d %H:%M:%S.%f')
+                elif isinstance(model_value, (date, time,timedelta,)):
+                    model_value = six.text_type(model_value)
                 self.assertEqual(model_value, response[name])
         except:
             raise
@@ -87,6 +93,8 @@ class CommonTest(TestBase):
         values = self.get_fake_values()
         response = self.manager.create(values)
         for name, value in six.iteritems(values):
+            if isinstance(values[name], (datetime, date, timedelta, time,)):
+                values[name] = six.text_type(values[name])
             self.assertEqual(values[name], response[name])
         self.assertIn('id', response)
 

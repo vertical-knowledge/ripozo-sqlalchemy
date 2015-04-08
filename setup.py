@@ -18,8 +18,8 @@ setup(
     description=('Integrates SQLAlchemy with ripozo to'
                  ' easily create cassandra backed Hypermedia/HATEOAS/REST apis'),
     install_requires=['ripozo', 'SQLAlchemy'],
-    tests_require=['tox', 'ripozo-tests'],
-    test_suite="tests",
+    tests_require=['tox', 'ripozo-tests', 'mock'],
+    test_suite="ripozo_sqlalchemy_tests",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: Other/Proprietary License',
