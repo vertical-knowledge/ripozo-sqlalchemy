@@ -10,20 +10,17 @@ from ripozo.viewsets.fields.common import StringField, IntegerField, \
 
 from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
 
-from ripozo_tests.python2base import TestBase
-
 from sqlalchemy import Column, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.types import BigInteger, Boolean, Date, DateTime,\
     Enum, Float, Integer, Interval, LargeBinary, Numeric, PickleType,\
-    SchemaType, SmallInteger, String, Text, Time, Unicode, UnicodeText
+    SmallInteger, String, Text, Time, Unicode, UnicodeText
 
 from ripozo_sqlalchemy_tests.unit.common import CommonTest
 
 import logging
 import random
-import six
 import string
 import unittest
 

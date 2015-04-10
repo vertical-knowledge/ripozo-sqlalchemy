@@ -22,7 +22,7 @@ setup(
     test_suite="ripozo_sqlalchemy_tests",
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'License :: Other/Proprietary License',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
