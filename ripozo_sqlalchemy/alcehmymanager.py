@@ -6,11 +6,12 @@ from __future__ import unicode_literals
 from datetime import datetime, date, time, timedelta
 from decimal import Decimal
 
+from ripozo.decorators import classproperty
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
-from ripozo.utilities import classproperty
+
 
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.exc import NoResultFound
