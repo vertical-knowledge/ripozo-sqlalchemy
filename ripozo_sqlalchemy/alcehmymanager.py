@@ -11,7 +11,7 @@ from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
 from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
-
+from ripozo.utilities import make_json_safe
 
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.exc import NoResultFound
@@ -22,18 +22,6 @@ import logging
 import six
 
 logger = logging.getLogger(__name__)
-
-
-def sql_to_json_encoder(obj):
-    # TODO docs and test
-    if isinstance(obj, dict):
-        for key, value in six.iteritems(obj):
-            obj[key] = sql_to_json_encoder(value)
-    elif isinstance(obj, (datetime, date, time, timedelta)):
-        obj = six.text_type(obj)
-    elif isinstance(obj, Decimal):
-        obj = float(obj)
-    return obj
 
 
 class AlchemyManager(BaseManager):
@@ -215,7 +203,7 @@ class AlchemyManager(BaseManager):
 
     def serialize_model(self, model, field_dict=None):
         response = self._serialize_model_helper(model, field_dict=field_dict)
-        return sql_to_json_encoder(response)
+        return make_json_safe(response)
 
     def _serialize_model_helper(self, model, field_dict=None):
         field_dict = field_dict or self.field_dict()
