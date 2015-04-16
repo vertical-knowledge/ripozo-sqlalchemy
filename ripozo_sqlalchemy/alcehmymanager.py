@@ -162,30 +162,6 @@ class AlchemyManager(BaseManager):
         self.session.commit()
         return {}
 
-    def _get_model_attributes(self):
-        attributes = []
-        joins = []
-        for field in self.fields:
-            attr, join = self._get_attr(field)
-            if join:
-                joins.append(join)
-            attributes.append(attr)
-        return attributes, joins
-
-    def _get_attr(self, field_name):
-        parts = field_name.split('.')
-        field = getattr(self.model, parts.pop(0))
-        join = None
-        for f in parts:
-            if hasattr(field.comparator, 'mapper'):
-                join = field.comparator.mapper.class_
-                field = getattr(field.comparator.mapper.class_, f)
-            else:
-                return getattr(field, f), join
-            pass
-        return field, join
-
-
     @property
     def queryset(self):
         """
