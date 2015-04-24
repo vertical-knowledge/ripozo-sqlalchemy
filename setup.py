@@ -16,9 +16,16 @@ setup(
     author='Tim Martin',
     author_email='tim.martin@vertical-knowledge.com',
     description=('Integrates SQLAlchemy with ripozo to'
-                 ' easily create cassandra backed Hypermedia/HATEOAS/REST apis'),
-    install_requires=['ripozo', 'SQLAlchemy'],
-    tests_require=['tox', 'ripozo-tests', 'mock'],
+                 ' easily create sqlalchemy backed Hypermedia/HATEOAS/REST apis'),
+    install_requires=[
+        'ripozo',
+        'SQLAlchemy'
+    ],
+    tests_require=[
+        'tox',
+        'ripozo-tests',
+        'mock'
+    ],
     test_suite="ripozo_sqlalchemy_tests",
     classifiers=[
         'Development Status :: 3 - Alpha',
