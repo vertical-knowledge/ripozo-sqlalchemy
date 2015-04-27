@@ -2,6 +2,8 @@
 ==================
 
 - Optimization for retrieving lists using ``AlchemyManager.list_fields`` property for retrieving lists
+- Retrieve list now properly applies filters.
+- meta links updated in retrieve_list.  They now are contained in the links dictionary
 
 
 0.1.4 (2015-03-26)
