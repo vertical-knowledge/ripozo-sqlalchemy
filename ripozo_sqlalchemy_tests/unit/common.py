@@ -184,7 +184,7 @@ class CommonTest(TestBase):
         filters = {}
         for i in range(4):
             response, meta = Manager().retrieve_list(filters)
-            filters = meta['next']
+            filters = meta['links']['next']
             self.assertLessEqual(len(response), 3)
             for r in response:
                 id = r['id']

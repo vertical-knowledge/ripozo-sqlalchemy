@@ -132,6 +132,9 @@ class AlchemyManager(BaseManager):
         q = self.queryset
         pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
         pagination_pk = filters.pop(self.pagination_pk_query_arg, 0)
+
+        q = q.filter_by(**filters)
+
         if pagination_pk:
             q = q.offset(pagination_pk * pagination_count)
         if pagination_count:
@@ -148,7 +151,7 @@ class AlchemyManager(BaseManager):
                         self.pagination_count_query_arg: pagination_count}
 
         props = self.serialize_model(q[:pagination_count], field_dict=self.dot_field_list_to_dict(self.list_fields))
-        return props, dict(next=next, previous=previous)
+        return props, dict(links=dict(next=next, previous=previous))
 
     def update(self, lookup_keys, updates, *args, **kwargs):
         model = self._get_model(lookup_keys)

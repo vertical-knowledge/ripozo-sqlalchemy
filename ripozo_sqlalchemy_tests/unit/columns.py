@@ -95,5 +95,22 @@ class TestColumnTypes(CommonTest, unittest.TestCase):
             large_binary=''.join(random.choice(string.ascii_letters) for _ in range(0, 100)).encode('utf-8')
         )
 
+    def test_retrieve_list_filter(self):
+        vals, meta = self.manager.retrieve_list(dict(big_integer=1001))
+        original_count = len(vals)
+        new_count = 10
+        for i in range(new_count):
+            vals = self.get_fake_values()
+            vals['big_integer'] = 1001
+            self.create(values=vals)
+        vals, meta = self.manager.retrieve_list(dict(big_integer=1001))
+        updated_count = len(vals)
+        self.assertEqual(original_count + new_count, updated_count)
 
-
+        for i in range(new_count):
+            vals = self.get_fake_values()
+            vals['big_integer'] = 1
+            self.create(values=vals)
+        new_vals, meta = self.manager.retrieve_list(dict(big_integer=1001))
+        final_count = len(new_vals)
+        self.assertEqual(updated_count, final_count)

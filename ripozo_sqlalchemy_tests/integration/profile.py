@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from ripozo.viewsets.restmixins import CreateRetrieveList, RetrieveUpdateDelete
+from ripozo.viewsets.restmixins import Create, RetrieveUpdateDelete
 
 from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
 
@@ -70,11 +70,6 @@ class MyModelManager(AlchemyManager):
     session = session
     model = MyModel
     fields = ('id', 'name', 'my_float', 'my_datetime', 'relateds.id')
-
-
-class MyModelResource(CreateRetrieveList):
-    _manager = MyModelManager
-    _resource_name = 'my_model'
 
 create_dict = dict(name='sadofkfgnmsdkofgnsdf', my_float=1.000, my_datetime=datetime.now())
 
