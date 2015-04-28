@@ -6,9 +6,13 @@ python:
   - "2.6"
   - "pypy"
   - "pypy3"
+env:
+  - SQLALCHEMY_VERSION=1.1
+  - SQLALCHEMY_VERSION=1.0
 install:
   - pip install coveralls
   - pip install -U ripozo-tests
+  - pip install SQLAlchemy<$SQLALCHEMY_VERSION
   - python setup.py -q install
 script:
   coverage run --source=ripozo_sqlalchemy setup.py test

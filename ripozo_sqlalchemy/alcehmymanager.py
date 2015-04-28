@@ -131,7 +131,8 @@ class AlchemyManager(BaseManager):
     def retrieve_list(self, filters, *args, **kwargs):
         q = self.queryset
         pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
-        pagination_pk = filters.pop(self.pagination_pk_query_arg, 0)
+        pagination_pk = filters.pop(self.pagination_pk_query_arg, 1)
+        pagination_pk -= 1  # logic works zero based. Pagination shouldn't be though
 
         q = q.filter_by(**filters)
 
@@ -144,14 +145,14 @@ class AlchemyManager(BaseManager):
         next = None
         previous = None
         if count > pagination_count:
-            next = {self.pagination_pk_query_arg: pagination_pk + 1,
+            next = {self.pagination_pk_query_arg: pagination_pk + 2,
                     self.pagination_count_query_arg: pagination_count}
         if pagination_pk > 0:
-            previous = {self.pagination_pk_query_arg: pagination_pk - 1,
+            previous = {self.pagination_pk_query_arg: pagination_pk,
                         self.pagination_count_query_arg: pagination_count}
 
         props = self.serialize_model(q[:pagination_count], field_dict=self.dot_field_list_to_dict(self.list_fields))
-        return props, dict(links=dict(next=next, previous=previous))
+        return props, dict(links=dict(next=next, prev=previous))
 
     def update(self, lookup_keys, updates, *args, **kwargs):
         model = self._get_model(lookup_keys)

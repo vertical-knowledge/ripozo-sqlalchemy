@@ -19,14 +19,14 @@ setup(
                  ' easily create sqlalchemy backed Hypermedia/HATEOAS/REST apis'),
     install_requires=[
         'ripozo',
-        'SQLAlchemy'
+        'SQLAlchemy>=0.9.1'
     ],
     tests_require=[
         'tox',
         'ripozo-tests',
         'mock'
     ],
-    test_suite="ripozo_sqlalchemy_tests",
+    test_suite="ripozo_sqlalchemy_tests.unit",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
