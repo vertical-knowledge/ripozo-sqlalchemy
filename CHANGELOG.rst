@@ -1,4 +1,4 @@
-0.1.5 (unreleased)
+0.1.5 (2015-04-28)
 ==================
 
 - Optimization for retrieving lists using ``AlchemyManager.list_fields`` property for retrieving lists
