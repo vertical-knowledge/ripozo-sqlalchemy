@@ -7,8 +7,8 @@ python:
   - "pypy"
   - "pypy3"
 env:
-  - SQLALCHEMY_VERSION="SQLAlchemy<1.1"
-  - SQLALCHEMY_VERSION="SQLAlchemy<1.0"
+  - SQLALCHEMY_VERSION="SQLAlchemy<1.1" RIPOZO="ripozo"
+  - SQLALCHEMY_VERSION="SQLAlchemy<1.0" RIPOZO="ripozo"
   - SQLALCHEMY_VERSION="SQLAlchemy" RIPOZO="git+git://github.com/vertical-knowledge/ripozo.git@master"
 install:
   - pip install coveralls
