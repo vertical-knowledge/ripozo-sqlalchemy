@@ -23,7 +23,6 @@ setup(
     ],
     tests_require=[
         'tox',
-        'ripozo-tests',
         'mock'
     ],
     test_suite="ripozo_sqlalchemy_tests.unit",

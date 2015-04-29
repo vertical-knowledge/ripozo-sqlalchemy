@@ -11,7 +11,7 @@ from decimal import Decimal
 
 from ripozo.exceptions import NotFoundException
 
-from ripozo_tests.python2base import TestBase
+from ripozo.tests.python2base import TestBase
 
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.query import Query

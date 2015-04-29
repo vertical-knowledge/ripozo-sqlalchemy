@@ -5,11 +5,9 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from ripozo.viewsets.restmixins import Create, RetrieveUpdateDelete
-
 from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
 
-from ripozo_tests.python2base import TestBase
+from ripozo.tests.python2base import TestBase
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base

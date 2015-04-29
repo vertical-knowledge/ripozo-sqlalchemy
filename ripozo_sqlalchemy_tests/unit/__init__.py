@@ -3,4 +3,4 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ripozo_sqlalchemy_tests.unit import alchemymanager
+from ripozo_sqlalchemy_tests.unit import alchemymanager, columns, common, relationships
