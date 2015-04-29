@@ -9,9 +9,11 @@ python:
 env:
   - SQLALCHEMY_VERSION="SQLAlchemy<1.1"
   - SQLALCHEMY_VERSION="SQLAlchemy<1.0"
+  - SQLALCHEMY_VERSION="SQLAlchemy" RIPOZO="git+git://github.com/vertical-knowledge/ripozo.git@master"
 install:
   - pip install coveralls
   - pip install $SQLALCHEMY_VERSION
+  - pip install $RIPOZO
   - python setup.py -q install
 script:
   coverage run --source=ripozo_sqlalchemy setup.py test
