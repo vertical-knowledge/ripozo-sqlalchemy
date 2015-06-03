@@ -43,6 +43,9 @@ class AlchemyManager(BaseManager):
         super(AlchemyManager, self).__init__(*args, **kwargs)
         self._field_dict = None
 
+    def after_request(self, session, resp):
+        return resp
+
     @classproperty
     def fields(cls):
         """
@@ -79,7 +82,6 @@ class AlchemyManager(BaseManager):
             # This is for pickle type columns.
             return object
 
-
     @classmethod
     def get_field_type(cls, name):
         """
@@ -107,10 +109,12 @@ class AlchemyManager(BaseManager):
             return BaseField(name)
 
     def create(self, values, *args, **kwargs):
+        session = self.session
         model = self._set_values_on_model(self.model(), values)
-        self.session.add(model)
-        self.session.commit()
-        return self.serialize_model(model)
+        session.add(model)
+        session.commit()
+        resp = self.serialize_model(model)
+        return self.after_request(session, resp)
 
     def retrieve(self, lookup_keys, *args, **kwargs):
         """
@@ -125,11 +129,14 @@ class AlchemyManager(BaseManager):
             fields attrbute on the class
         :rtype: dict
         """
-        model = self._get_model(lookup_keys)
-        return self.serialize_model(model)
+        session = self.session
+        model = self._get_model(lookup_keys, session)
+        resp = self.serialize_model(model)
+        return self.after_request(session, resp)
 
     def retrieve_list(self, filters, *args, **kwargs):
-        q = self.queryset
+        session = self.session
+        q = self.queryset(session)
         pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
         pagination_pk = filters.pop(self.pagination_pk_query_arg, 1)
         pagination_pk -= 1  # logic works zero based. Pagination shouldn't be though
@@ -152,22 +159,25 @@ class AlchemyManager(BaseManager):
                         self.pagination_count_query_arg: pagination_count}
 
         props = self.serialize_model(q[:pagination_count], field_dict=self.dot_field_list_to_dict(self.list_fields))
-        return props, dict(links=dict(next=next, prev=previous))
+        meta = dict(links=dict(next=next, prev=previous))
+        return self.after_request(session, (props, meta,))
 
     def update(self, lookup_keys, updates, *args, **kwargs):
-        model = self._get_model(lookup_keys)
+        session = self.session
+        model = self._get_model(lookup_keys, session)
         model = self._set_values_on_model(model, updates)
-        self.session.commit()
-        return self.serialize_model(model)
+        session.commit()
+        resp = self.serialize_model(model)
+        return self.after_request(session, resp)
 
     def delete(self, lookup_keys, *args, **kwargs):
-        model = self._get_model(lookup_keys)
-        self.session.delete(model)
-        self.session.commit()
-        return {}
+        session = self.session
+        model = self._get_model(lookup_keys, session)
+        session.delete(model)
+        session.commit()
+        return self.after_request(session, {})
 
-    @property
-    def queryset(self):
+    def queryset(self, session):
         """
         The queryset to use when looking for models.
 
@@ -179,7 +189,7 @@ class AlchemyManager(BaseManager):
         # for j in joins:
         #     q = q.outerjoin(j)
         # return q
-        return self.session.query(self.model)
+        return session.query(self.model)
 
     def serialize_model(self, model, field_dict=None):
         response = self._serialize_model_helper(model, field_dict=field_dict)
@@ -207,9 +217,9 @@ class AlchemyManager(BaseManager):
             model_dict[name] = value
         return model_dict
 
-    def _get_model(self, lookup_keys):
+    def _get_model(self, lookup_keys, session):
         try:
-            return self.queryset.filter_by(**lookup_keys).one()
+            return self.queryset(session).filter_by(**lookup_keys).one()
         except NoResultFound:
             raise NotFoundException('No model of type {0} was found using '
                                     'lookup_keys {1}'.format(self.model.__name__, lookup_keys))
