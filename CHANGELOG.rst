@@ -7,7 +7,8 @@
 0.1.6b1 (2015-06-04)
 ====================
 
-- Nothing changed yet.
+- Sessions are only grabbed once in any given method.  This allows you to safely return a new session every time
+- Added a method for after a CRUD statement has been called.
 
 
 0.1.5 (2015-04-28)
