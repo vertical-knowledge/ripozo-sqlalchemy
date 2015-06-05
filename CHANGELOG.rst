@@ -1,7 +1,7 @@
 0.1.6b2 (unreleased)
 ====================
 
-- Nothing changed yet.
+- Breaking Change: You are now required to inject a session handler on instantiation of the manager.
 
 
 0.1.6b1 (2015-06-04)
