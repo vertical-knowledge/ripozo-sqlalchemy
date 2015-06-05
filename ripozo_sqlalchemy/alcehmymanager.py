@@ -94,7 +94,6 @@ class AlchemyManager(BaseManager):
         the model will be used.  The model will be inspected to
         get the fields.
     """
-    session = None  # the database object needs to be given to the class
     pagination_pk_query_arg = 'page'
     all_fields = False
 
