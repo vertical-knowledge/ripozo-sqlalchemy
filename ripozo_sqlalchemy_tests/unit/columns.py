@@ -8,11 +8,11 @@ from datetime import datetime, date, timedelta, time
 from ripozo.viewsets.fields.common import StringField, IntegerField, \
     FloatField, BooleanField, DateTimeField, BaseField
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler
 
 from sqlalchemy import Column, create_engine
+from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.types import BigInteger, Boolean, Date, DateTime,\
     Enum, Float, Integer, Interval, LargeBinary, Numeric, PickleType,\
     SmallInteger, String, Text, Time, Unicode, UnicodeText
@@ -29,8 +29,10 @@ logger = logging.getLogger(__name__)
 
 class TestColumnTypes(CommonTest, unittest.TestCase):
     def setUp(self):
-        self.Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
-        self.session = sessionmaker()()
+        self.engine = create_engine('sqlite:///:memory:', echo=True)
+        self.Base = declarative_base(self.engine)
+        self.session_handler = SessionHandler(self.engine)
+        self.session = Session(self.engine)
 
         class MyModel(self.Base):
             __tablename__ = 'my_model'
@@ -57,7 +59,6 @@ class TestColumnTypes(CommonTest, unittest.TestCase):
         self.Base.metadata.create_all()
 
         class ModelManager(AlchemyManager):
-            session = self.session
             model = self.model
             _fields = ['id', 'big_integer', 'boolean', 'date', 'date_time',
                        'enum', 'float', 'integer', 'interval', 'large_binary',

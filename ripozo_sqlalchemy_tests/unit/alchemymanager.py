@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from ripozo.viewsets.fields.common import StringField, IntegerField
 from ripozo.exceptions import NotFoundException
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler
 
 from ripozo.tests.python2base import TestBase
 
@@ -38,9 +38,13 @@ class PersonManager(AlchemyManager):
 
 
 class TestAlchemyManager(TestBase, unittest.TestCase):
+    def setUp(self):
+        self.engine = create_engine('sqlite:///:memory:', echo=True)
+
     @property
     def manager(self):
-        return PersonManager()
+        session_handler = SessionHandler(self.engine)
+        return PersonManager(session_handler)
 
     @property
     def all_person_models(self):

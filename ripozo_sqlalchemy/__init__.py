@@ -3,4 +3,4 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler, db_access_point

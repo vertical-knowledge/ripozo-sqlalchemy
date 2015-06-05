@@ -5,11 +5,11 @@ from __future__ import unicode_literals
 
 from ripozo.viewsets.fields.common import IntegerField, StringField
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler
 
 from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import relationship, Session
 
 from ripozo_sqlalchemy_tests.unit.common import CommonTest
 
@@ -31,8 +31,10 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         return dict(value=''.join(random.choice(string.ascii_letters) for _ in range(20)))
 
     def setUp(self):
-        self.Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
-        self.session = sessionmaker()()
+        self.engine = create_engine('sqlite:///:memory:', echo=True)
+        self.Base = declarative_base(self.engine)
+        self.session_handler = SessionHandler(self.engine)
+        self.session = Session(self.engine)
 
         class One(self.Base):
             __tablename__ = 'one'
@@ -84,7 +86,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         child1 = self.create_many(one_id=parent.id)
         child2 = self.create_many(one_id=parent.id)
 
-        parent_dict = OneManager().retrieve(dict(id=parent.id))
+        parent_dict = OneManager(self.session_handler).retrieve(dict(id=parent.id))
         self.assertIsInstance(parent_dict, dict)
         self.assertEqual(parent_dict['id'], parent.id)
         self.assertEqual(parent_dict['value'], parent.value)
@@ -108,7 +110,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         child1 = self.create_many(one_id=parent.id)
         child2 = self.create_many(one_id=parent.id)
 
-        parent_dict = OneManager().retrieve(dict(id=parent.id))
+        parent_dict = OneManager(self.session_handler).retrieve(dict(id=parent.id))
         self.assertIsInstance(parent_dict, dict)
         self.assertEqual(parent_dict['id'], parent.id)
         self.assertEqual(parent_dict['value'], parent.value)
@@ -132,7 +134,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         parent = self.create_one()
         child1 = self.create_many(one_id=parent.id)
 
-        child1_dict = ManyManager().retrieve(dict(id=child1.id))
+        child1_dict = ManyManager(self.session_handler).retrieve(dict(id=child1.id))
         self.assertIsInstance(child1_dict, dict)
         self.assertEqual(child1_dict['many_value'], child1.many_value)
         self.assertIsInstance(child1_dict['one'], dict)
@@ -147,7 +149,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         parent = self.create_one()
         child1 = self.create_many(one_id=parent.id)
 
-        child1_dict = ManyManager().retrieve(dict(id=child1.id))
+        child1_dict = ManyManager(self.session_handler).retrieve(dict(id=child1.id))
         self.assertIsInstance(child1_dict, dict)
         self.assertEqual(child1_dict['many_value'], child1.many_value)
         self.assertIsInstance(child1_dict['one'], dict)
@@ -163,7 +165,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
         parent = self.create_one()
         child1 = self.create_many(one_id=parent.id)
 
-        child1_dict = ManyManager().retrieve(dict(id=child1.id))
+        child1_dict = ManyManager(self.session_handler).retrieve(dict(id=child1.id))
         self.assertIsInstance(child1_dict, dict)
         self.assertEqual(child1_dict['many_value'], child1.many_value)
         self.assertEqual(parent.id, child1_dict['one_id'])
@@ -171,8 +173,10 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
 
 class TestOneToManyRelationshipLazy(TestOneToManyRelationship):
     def setUp(self):
-        self.Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
-        self.session = sessionmaker()()
+        self.engine = create_engine('sqlite:///:memory:', echo=True)
+        self.Base = declarative_base(self.engine)
+        self.session_handler = SessionHandler(self.engine)
+        self.session = Session(self.engine)
 
         class One(self.Base):
             __tablename__ = 'one'
@@ -187,7 +191,6 @@ class TestOneToManyRelationshipLazy(TestOneToManyRelationship):
             one_id = Column(Integer, ForeignKey('one.id'))
 
         class DefaultManager(AlchemyManager):
-            session = self.session
             model = One
             _fields = ['id', 'value', 'manies.id']
 

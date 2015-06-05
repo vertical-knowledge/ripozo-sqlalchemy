@@ -10,8 +10,9 @@ from datetime import datetime, date, timedelta, time
 from decimal import Decimal
 
 from ripozo.exceptions import NotFoundException
-
 from ripozo.tests.python2base import TestBase
+
+from ripozo_sqlalchemy import SessionHandler
 
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.query import Query
@@ -32,7 +33,10 @@ class CommonTest(TestBase):
 
     @property
     def manager(self):
-        return self._manager()
+        session_handler = SessionHandler(self.engine)
+        self.session_handler = session_handler
+        self.session = self.session_handler.get_session()
+        return self._manager(self.session_handler)
 
     def assertResponseEqualsModel(self, model, manager, response):
         try:
@@ -125,7 +129,7 @@ class CommonTest(TestBase):
         model = self.create(values=original_values)
         new_values = self.get_fake_values()
         response = self.manager.update(dict(id=model.id), new_values)
-        self.session.refresh(model)
+        model = self.get_model(model.id)
         self.assertResponseEqualsModel(model, self.manager, response)
 
         not_equal = False
@@ -153,7 +157,7 @@ class CommonTest(TestBase):
         model = self.create(values=values)
         values['fake'] = 'nope'
         response = self.manager.update(dict(id=model.id), values)
-        self.session.refresh(model)
+        model = self.get_model(model.id)
         if 'fake' in response:
             assert False
         self.assertRaises(AttributeError, getattr, model, 'fake')
@@ -183,12 +187,12 @@ class CommonTest(TestBase):
 
         filters = {}
         for i in range(4):
-            response, meta = Manager().retrieve_list(filters)
+            response, meta = Manager(self.session_handler).retrieve_list(filters)
             filters = meta['links']['next']
             self.assertLessEqual(len(response), 3)
             for r in response:
                 id = r['id']
                 for model in models:
                     if model.id == id:
-                        self.assertResponseEqualsModel(model, Manager(), r)
+                        self.assertResponseEqualsModel(model, Manager(self.session_handler), r)
                         break

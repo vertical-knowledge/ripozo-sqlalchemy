@@ -14,7 +14,7 @@ from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import make_json_safe
 
-from sqlalchemy.orm import class_mapper, sessionmaker
+from sqlalchemy.orm import class_mapper, sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -62,7 +62,7 @@ class SessionHandler(object):
         :param Engine engine: A SQLAlchemy engine.
         """
         self.engine = engine
-        self.session_maker = sessionmaker(bind=self.engine)
+        self.session_maker = scoped_session(sessionmaker(bind=self.engine))
 
     def get_session(self):
         """
