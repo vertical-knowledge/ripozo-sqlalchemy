@@ -1,4 +1,4 @@
-0.1.6b2 (unreleased)
+0.2.0b1 (2015-06-05)
 ====================
 
 - Breaking Change: You are now required to inject a session handler on instantiation of the manager.
