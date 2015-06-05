@@ -126,6 +126,16 @@ class AlchemyManager(BaseManager):
 
     @staticmethod
     def _get_field_python_type(model, name):
+        """
+        Gets the python type for the attribute on the model
+        with the name provided.
+
+        :param Model model: The SqlAlchemy model class.
+        :param unicode name: The column name on the model
+            that you are attempting to get the python type.
+        :return: The python type of the column
+        :rtype: type
+        """
         try:
             return getattr(model, name).property.columns[0].type.python_type
         except AttributeError:  # It's a relationship
@@ -199,18 +209,31 @@ class AlchemyManager(BaseManager):
         Only one model should be returned by the lookup_keys
         or else the manager will fail.
 
+        :param Session session: The SQLAlchemy session to use
         :param dict lookup_keys: A dictionary mapping the fields
             and their expected values
         :return: The dictionary of keys and values for the retrieved
             model.  The only values returned will be those specified by
             fields attrbute on the class
         :rtype: dict
+        :raises: NotFoundException
         """
         model = self._get_model(lookup_keys, session)
         return self.serialize_model(model)
 
     @db_access_point
     def retrieve_list(self, session, filters, *args, **kwargs):
+        """
+        Retrieves a list of the model for this manager.
+        It is restricted by the filters provided.
+
+        :param Session session: The SQLAlchemy session to use
+        :param dict filters: The filters to restrict the returned
+            models on
+        :return: A tuple of the list of dictionary representation
+            of the models and the dictionary of meta data
+        :rtype: list, dict
+        """
         q = self.queryset(session)
         pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
         pagination_pk = filters.pop(self.pagination_pk_query_arg, 1)
@@ -239,6 +262,21 @@ class AlchemyManager(BaseManager):
 
     @db_access_point
     def update(self, session, lookup_keys, updates, *args, **kwargs):
+        """
+        Updates the model with the specified lookup_keys and returns
+        the dictified object.
+
+        :param Session session: The SQLAlchemy session to use
+        :param dict lookup_keys: A dictionary mapping the fields
+            and their expected values
+        :param dict updates: The columns and the values to update
+            them to.
+        :return: The dictionary of keys and values for the retrieved
+            model.  The only values returned will be those specified by
+            fields attrbute on the class
+        :rtype: dict
+        :raises: NotFoundException
+        """
         model = self._get_model(lookup_keys, session)
         try:
             model = self._set_values_on_model(model, updates, fields=self.update_fields)
@@ -250,6 +288,16 @@ class AlchemyManager(BaseManager):
 
     @db_access_point
     def delete(self, session, lookup_keys, *args, **kwargs):
+        """
+        Deletes the model found using the lookup_keys
+
+        :param Session session: The SQLAlchemy session to use
+        :param dict lookup_keys: A dictionary mapping the fields
+            and their expected values
+        :return: An empty dictionary
+        :rtype: dict
+        :raises: NotFoundException
+        """
         model = self._get_model(lookup_keys, session)
         try:
             session.delete(model)
@@ -274,6 +322,15 @@ class AlchemyManager(BaseManager):
         return session.query(self.model)
 
     def serialize_model(self, model, field_dict=None):
+        """
+        Takes a model and serializes the fields provided into
+        a dictionary.
+
+        :param Model model: The Sqlalchemy model instance to serialize
+        :param dict field_dict: The dictionary of fields to return.
+        :return: The serialized model.
+        :rtype: dict
+        """
         response = self._serialize_model_helper(model, field_dict=field_dict)
         return make_json_safe(response)
 
