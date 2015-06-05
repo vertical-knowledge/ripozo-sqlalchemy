@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime, date, time, timedelta
 from decimal import Decimal
+from functools import wraps
 
 from ripozo.decorators import classproperty
 from ripozo.exceptions import NotFoundException
@@ -13,7 +14,7 @@ from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import make_json_safe
 
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -24,6 +25,63 @@ import six
 logger = logging.getLogger(__name__)
 
 
+def db_access_point(f):
+    """
+    Wraps a function that actually accesses the database.
+    It injects a session into the method and attempts to handle
+    it after the function has run.
+
+    :param method f: The method that is interacting with the database.
+    """
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        session = self.session_handler.get_session()
+        try:
+            resp = f(self, session, *args, **kwargs)
+            return resp
+        finally:
+            self.session_handler.handle_session(session)
+    return wrapper
+
+
+class SessionHandler(object):
+    """
+    A SessionHandler is injected into the AlchemyManager
+    in order to get and handle sessions after a database
+    access.
+
+    There are two required methods for any session handler.
+    It must have a
+    """
+
+    def __init__(self, engine):
+        """
+        Initializes the SessionHandler which is responsible
+        for getting sessions and closing them after a database access.
+
+        :param Engine engine: A SQLAlchemy engine.
+        """
+        self.engine = engine
+        self.session_maker = sessionmaker(bind=self.engine)
+
+    def get_session(self):
+        """
+        Gets an individual session.
+
+        :return: The session object.
+        :rtype: Session
+        """
+        return self.session_maker()
+
+    def handle_session(self, session):
+        """
+        Handles closing a session.
+
+        :param Session session: The session to close.
+        """
+        session.close()
+
+
 class AlchemyManager(BaseManager):
     """
     This is the Manager that interops between ripozo
@@ -32,19 +90,18 @@ class AlchemyManager(BaseManager):
     be extended as necessary and it is recommended that direct
     database access should be performed in a manager.
 
-    :param session: The sqlalchemy session needs to be set on an
-        subclass of AlchemyManager.
+    :param bool all_fields:  If this is true, then all fields on
+        the model will be used.  The model will be inspected to
+        get the fields.
     """
     session = None  # the database object needs to be given to the class
     pagination_pk_query_arg = 'page'
     all_fields = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, session_handler, *args, **kwargs):
         super(AlchemyManager, self).__init__(*args, **kwargs)
         self._field_dict = None
-
-    def after_request(self, session, resp):
-        return resp
+        self.session_handler = session_handler
 
     @classproperty
     def fields(cls):
@@ -108,15 +165,35 @@ class AlchemyManager(BaseManager):
         else:
             return BaseField(name)
 
-    def create(self, values, *args, **kwargs):
-        session = self.session
-        model = self._set_values_on_model(self.model(), values)
-        session.add(model)
-        session.commit()
-        resp = self.serialize_model(model)
-        return self.after_request(session, resp)
+    @db_access_point
+    def create(self, session, values, *args, **kwargs):
+        """
+        Creates a new instance of the self.model
+        and persists it to the database.
 
-    def retrieve(self, lookup_keys, *args, **kwargs):
+        :param dict values: The dictionary of values to
+            set on the model.  The key is the column name
+            and the value is what it will be set to.  If
+            the cls._create_fields is defined then it will
+            use those fields.  Otherwise, it will use the
+            fields defined in cls.fields
+        :param Session session: The sqlalchemy session
+        :return: The serialized model.  It will use the self.fields
+            attribute for this.
+        :rtype: dict
+        """
+        model = self.model()
+        model = self._set_values_on_model(model, values, fields=self.create_fields)
+        try:
+            session.add(model)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        return self.serialize_model(model)
+
+    @db_access_point
+    def retrieve(self, session, lookup_keys, *args, **kwargs):
         """
         Retrieves a model using the lookup keys provided.
         Only one model should be returned by the lookup_keys
@@ -129,13 +206,11 @@ class AlchemyManager(BaseManager):
             fields attrbute on the class
         :rtype: dict
         """
-        session = self.session
         model = self._get_model(lookup_keys, session)
-        resp = self.serialize_model(model)
-        return self.after_request(session, resp)
+        return self.serialize_model(model)
 
-    def retrieve_list(self, filters, *args, **kwargs):
-        session = self.session
+    @db_access_point
+    def retrieve_list(self, session, filters, *args, **kwargs):
         q = self.queryset(session)
         pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
         pagination_pk = filters.pop(self.pagination_pk_query_arg, 1)
@@ -160,22 +235,29 @@ class AlchemyManager(BaseManager):
 
         props = self.serialize_model(q[:pagination_count], field_dict=self.dot_field_list_to_dict(self.list_fields))
         meta = dict(links=dict(next=next, prev=previous))
-        return self.after_request(session, (props, meta,))
+        return props, meta
 
-    def update(self, lookup_keys, updates, *args, **kwargs):
-        session = self.session
+    @db_access_point
+    def update(self, session, lookup_keys, updates, *args, **kwargs):
         model = self._get_model(lookup_keys, session)
-        model = self._set_values_on_model(model, updates)
-        session.commit()
-        resp = self.serialize_model(model)
-        return self.after_request(session, resp)
+        try:
+            model = self._set_values_on_model(model, updates, fields=self.update_fields)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        return self.serialize_model(model)
 
-    def delete(self, lookup_keys, *args, **kwargs):
-        session = self.session
+    @db_access_point
+    def delete(self, session, lookup_keys, *args, **kwargs):
         model = self._get_model(lookup_keys, session)
-        session.delete(model)
-        session.commit()
-        return self.after_request(session, {})
+        try:
+            session.delete(model)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        return {}
 
     def queryset(self, session):
         """
@@ -224,9 +306,10 @@ class AlchemyManager(BaseManager):
             raise NotFoundException('No model of type {0} was found using '
                                     'lookup_keys {1}'.format(self.model.__name__, lookup_keys))
 
-    def _set_values_on_model(self, model, values):
+    def _set_values_on_model(self, model, values, fields=None):
+        fields = fields or self.fields
         for name, val in six.iteritems(values):
-            if name not in self.fields:
+            if name not in fields:
                 continue
             setattr(model, name, val)
         return model
