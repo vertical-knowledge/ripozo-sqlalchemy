@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 
-version = '0.2.0b1'
+version = '0.2.0b2.dev0'
 
 setup(
     name='ripozo-sqlalchemy',
