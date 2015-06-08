@@ -116,11 +116,14 @@ class CommonTest(TestBase):
         model_count = 10
         for i in range(model_count):
             models.append(self.create())
+        model_ids = [m.id for m in models]
         response, meta = self.manager.retrieve_list({})
+        self.session = self.session_handler.get_session()
         for r in response:
             id = r['id']
-            for model in models:
-                if model.id == id:
+            for model_id in model_ids:
+                if model_id == id:
+                    model = self.get_model(model_id)
                     self.assertResponseEqualsModel(model, self.manager, r)
                     break
 
