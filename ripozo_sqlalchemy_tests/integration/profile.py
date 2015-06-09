@@ -6,25 +6,26 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from ripozo_sqlalchemy.alcehmymanager import AlchemyManager
+from ripozo_sqlalchemy.session_handlers import ScopedSessionHandler
 
 from ripozo.tests.python2base import TestBase
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import  relationship
 
 import cProfile
 import logging
 import pstats
-import unittest
+import unittest2
 
 
 # Disable all logging since we don't care about its performance
 logging.disable(logging.CRITICAL)
 
-
-Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
-session = sessionmaker()()
+engine = create_engine('sqlite:///:memory:', echo=True)
+Base = declarative_base(engine)
+session_handler = ScopedSessionHandler(engine)
 
 
 def profileit(func):
@@ -65,28 +66,27 @@ Base.metadata.create_all()
 
 
 class MyModelManager(AlchemyManager):
-    session = session
     model = MyModel
     fields = ('id', 'name', 'my_float', 'my_datetime', 'relateds.id')
 
 create_dict = dict(name='sadofkfgnmsdkofgnsdf', my_float=1.000, my_datetime=datetime.now())
 
 
-class TestProfiler(TestBase, unittest.TestCase):
+class TestProfiler(unittest2.TestCase):
+    manager = MyModelManager(session_handler)
 
     @profileit
     def test_create_profile(self):
         for i in range(5000):
-            MyModelManager().create(create_dict)
+            self.manager.create(create_dict)
 
     def test_retrieve_a_shit_ton(self):
         for i in range(5):
-            MyModelManager().create(create_dict)
-        session.commit()
+            self.manager.create(create_dict)
 
         self.retrieve_list()
 
     @profileit
     def retrieve_list(self):
-        MyModelManager().retrieve_list({})
+        self.manager.retrieve_list({})
 

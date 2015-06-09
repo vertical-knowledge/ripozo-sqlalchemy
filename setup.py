@@ -22,6 +22,7 @@ setup(
         'SQLAlchemy>=0.9.1'
     ],
     tests_require=[
+        'unittest2',
         'tox',
         'mock'
     ],
