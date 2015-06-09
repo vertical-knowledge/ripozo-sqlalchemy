@@ -14,7 +14,7 @@ from ripozo.viewsets.fields.base import BaseField
 from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import make_json_safe
 
-from sqlalchemy.orm import class_mapper, sessionmaker, scoped_session
+from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -42,44 +42,6 @@ def db_access_point(f):
         finally:
             self.session_handler.handle_session(session)
     return wrapper
-
-
-class SessionHandler(object):
-    """
-    A SessionHandler is injected into the AlchemyManager
-    in order to get and handle sessions after a database
-    access.
-
-    There are two required methods for any session handler.
-    It must have a
-    """
-
-    def __init__(self, engine):
-        """
-        Initializes the SessionHandler which is responsible
-        for getting sessions and closing them after a database access.
-
-        :param Engine engine: A SQLAlchemy engine.
-        """
-        self.engine = engine
-        self.session_maker = scoped_session(sessionmaker(bind=self.engine))
-
-    def get_session(self):
-        """
-        Gets an individual session.
-
-        :return: The session object.
-        :rtype: Session
-        """
-        return self.session_maker()
-
-    def handle_session(self, session):
-        """
-        Handles closing a session.
-
-        :param Session session: The session to close.
-        """
-        session.close()
 
 
 class AlchemyManager(BaseManager):
