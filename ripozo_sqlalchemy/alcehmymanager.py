@@ -10,8 +10,8 @@ from functools import wraps
 from ripozo.decorators import classproperty
 from ripozo.exceptions import NotFoundException
 from ripozo.managers.base import BaseManager
-from ripozo.viewsets.fields.base import BaseField
-from ripozo.viewsets.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
+from ripozo.resources.fields.base import BaseField
+from ripozo.resources.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
 from ripozo.utilities import make_json_safe
 
 from sqlalchemy.orm import class_mapper
