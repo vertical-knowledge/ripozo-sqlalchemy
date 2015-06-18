@@ -313,6 +313,15 @@ class AlchemyManager(BaseManager):
         return model_dict
 
     def _get_model(self, lookup_keys, session):
+        """
+        Gets the sqlalchemy Model instance associated with
+        the lookup keys.
+
+        :param dict lookup_keys: A dictionary of the keys
+            and their associated values.
+        :param Session session: The sqlalchemy session
+        :return: The sqlalchemy orm model instance.
+        """
         try:
             return self.queryset(session).filter_by(**lookup_keys).one()
         except NoResultFound:
@@ -320,6 +329,17 @@ class AlchemyManager(BaseManager):
                                     'lookup_keys {1}'.format(self.model.__name__, lookup_keys))
 
     def _set_values_on_model(self, model, values, fields=None):
+        """
+        Updates the values with the specified values.
+
+        :param Model model: The sqlalchemy model instance
+        :param dict values: The dictionary of attributes and
+            the values to set.
+        :param list fields: A list of strings indicating
+            the valid fields. Defaults to self.fields.
+        :return: The model with the updated
+        :rtype: Model
+        """
         fields = fields or self.fields
         for name, val in six.iteritems(values):
             if name not in fields:
