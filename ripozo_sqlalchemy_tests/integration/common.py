@@ -10,9 +10,8 @@ from datetime import datetime, date, timedelta, time
 from decimal import Decimal
 
 from ripozo.exceptions import NotFoundException
-from ripozo.tests.python2base import TestBase
 
-from ripozo_sqlalchemy import SessionHandler
+from ripozo_sqlalchemy import ScopedSessionHandler
 
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.query import Query
@@ -22,7 +21,7 @@ import six
 __author__ = 'Tim Martin'
 
 @six.add_metaclass(ABCMeta)
-class CommonTest(TestBase):
+class CommonTest(object):
     @abstractproperty
     def field_dict(self):
         pass
@@ -33,7 +32,7 @@ class CommonTest(TestBase):
 
     @property
     def manager(self):
-        session_handler = SessionHandler(self.engine)
+        session_handler = ScopedSessionHandler(self.engine)
         self.session_handler = session_handler
         self.session = self.session_handler.get_session()
         return self._manager(self.session_handler)

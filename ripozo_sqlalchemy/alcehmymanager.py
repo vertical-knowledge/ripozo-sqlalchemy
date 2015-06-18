@@ -275,11 +275,6 @@ class AlchemyManager(BaseManager):
         This is advantageous to override if you only
         want a subset of the model specified.
         """
-        # attrs, joins = self._get_model_attributes()
-        # q = self.session.query(*attrs)
-        # for j in joins:
-        #     q = q.outerjoin(j)
-        # return q
         return session.query(self.model)
 
     def serialize_model(self, model, field_dict=None):

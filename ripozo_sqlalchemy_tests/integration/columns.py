@@ -4,34 +4,31 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime, date, timedelta, time
+import logging
+import random
+import string
 
-from ripozo.viewsets.fields.common import StringField, IntegerField, \
+from ripozo.resources.fields.common import StringField, IntegerField, \
     FloatField, BooleanField, DateTimeField, BaseField
-
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler
-
 from sqlalchemy import Column, create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import BigInteger, Boolean, Date, DateTime,\
     Enum, Float, Integer, Interval, LargeBinary, Numeric, PickleType,\
     SmallInteger, String, Text, Time, Unicode, UnicodeText
+import unittest2
 
-from ripozo_sqlalchemy_tests.unit.common import CommonTest
-
-import logging
-import random
-import string
-import unittest
+from ripozo_sqlalchemy import AlchemyManager, ScopedSessionHandler
+from ripozo_sqlalchemy_tests.integration.common import CommonTest
 
 logger = logging.getLogger(__name__)
 
 
-class TestColumnTypes(CommonTest, unittest.TestCase):
+class TestColumnTypes(CommonTest, unittest2.TestCase):
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=True)
         self.Base = declarative_base(self.engine)
-        self.session_handler = SessionHandler(self.engine)
+        self.session_handler = ScopedSessionHandler(self.engine)
         self.session = Session(self.engine)
 
         class MyModel(self.Base):

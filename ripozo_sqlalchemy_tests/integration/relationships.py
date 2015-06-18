@@ -3,26 +3,24 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ripozo.viewsets.fields.common import IntegerField, StringField
+import random
+import string
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler
-
+from ripozo.resources.fields.common import IntegerField, StringField
 from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session
+import unittest2
 
-from ripozo_sqlalchemy_tests.unit.common import CommonTest
-
-import random
-import string
-import unittest
+from ripozo_sqlalchemy import AlchemyManager, ScopedSessionHandler
+from ripozo_sqlalchemy_tests.integration.common import CommonTest
 
 
 def random_string():
     return ''.join(random.choice(string.ascii_letters) for _ in range(20))
 
 
-class TestOneToManyRelationship(CommonTest, unittest.TestCase):
+class TestOneToManyRelationship(CommonTest, unittest2.TestCase):
     @property
     def field_dict(self):
         return {'id': IntegerField, 'value': StringField, 'manies.id': IntegerField}
@@ -33,7 +31,7 @@ class TestOneToManyRelationship(CommonTest, unittest.TestCase):
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=True)
         self.Base = declarative_base(self.engine)
-        self.session_handler = SessionHandler(self.engine)
+        self.session_handler = ScopedSessionHandler(self.engine)
         self.session = Session(self.engine)
 
         class One(self.Base):
@@ -175,7 +173,7 @@ class TestOneToManyRelationshipLazy(TestOneToManyRelationship):
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=True)
         self.Base = declarative_base(self.engine)
-        self.session_handler = SessionHandler(self.engine)
+        self.session_handler = ScopedSessionHandler(self.engine)
         self.session = Session(self.engine)
 
         class One(self.Base):

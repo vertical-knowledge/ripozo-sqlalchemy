@@ -3,18 +3,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ripozo.viewsets.fields.common import StringField, IntegerField
+from ripozo.resources.fields.common import StringField, IntegerField
 from ripozo.exceptions import NotFoundException
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, SessionHandler
-
-from ripozo.tests.python2base import TestBase
+from ripozo_sqlalchemy import AlchemyManager, ScopedSessionHandler
 
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-import unittest
+import unittest2
 
 
 Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
@@ -37,13 +35,13 @@ class PersonManager(AlchemyManager):
     fields = ('id', 'first_name', 'last_name')
 
 
-class TestAlchemyManager(TestBase, unittest.TestCase):
+class TestAlchemyManager(unittest2.TestCase):
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=True)
 
     @property
     def manager(self):
-        session_handler = SessionHandler(self.engine)
+        session_handler = ScopedSessionHandler(self.engine)
         return PersonManager(session_handler)
 
     @property

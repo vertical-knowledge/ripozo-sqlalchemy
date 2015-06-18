@@ -26,7 +26,7 @@ setup(
         'tox',
         'mock'
     ],
-    test_suite="ripozo_sqlalchemy_tests.unit",
+    test_suite="ripozo_sqlalchemy_tests",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
