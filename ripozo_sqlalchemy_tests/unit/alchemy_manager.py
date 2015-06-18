@@ -24,3 +24,37 @@ class TestAlchemyManager(unittest2.TestCase):
         session = mock.MagicMock()
         session.query.side_effect = NoResultFound
         self.assertRaises(NotFoundException, m._get_model, {}, session)
+
+    def test_serialize_model_helper_none(self):
+        """
+        Tests serializing None
+        """
+        m = AlchemyManager(None)
+        self.assertIsNone(m._serialize_model_helper(None))
+
+    def test_serialize_model_list(self):
+        """
+        Tests serializing a list/set
+        """
+        m = AlchemyManager(None)
+        model = [None, None, None]
+        resp = m._serialize_model_helper(model)
+        for x in model:
+            self.assertIsNone(x)
+        self.assertEqual(len(model), 3)
+
+    def test_serialize_model_recursion(self):
+        """
+        Tests a recursive serialization of a model.
+        """
+        m = AlchemyManager(None)
+        field_dict = dict(first=None, second=dict(third=None))
+        model = mock.Mock(first=1, second=mock.Mock(third=3))
+        resp = m._serialize_model_helper(model, field_dict=field_dict)
+        self.assertDictEqual(dict(first=1, second=dict(third=3)), resp)
+
+    def test_queryset(self):
+        m = AlchemyManager(None)
+        session = mock.MagicMock()
+        resp = m.queryset(session)
+        self.assertTrue(session.query.called)

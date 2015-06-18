@@ -299,10 +299,7 @@ class AlchemyManager(BaseManager):
             model = model.all()
 
         if isinstance(model, (list, set)):
-            model_list = []
-            for m in model:
-                model_list.append(self.serialize_model(m, field_dict=field_dict))
-            return model_list
+            return [self.serialize_model(m, field_dict=field_dict) for m in model]
 
         model_dict = {}
         for name, sub in six.iteritems(field_dict):
