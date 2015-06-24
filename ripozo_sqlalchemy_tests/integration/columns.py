@@ -68,7 +68,7 @@ class TestColumnTypes(CommonTest, unittest2.TestCase):
     def field_dict(self):
         return dict(big_integer=IntegerField, boolean=BooleanField, date=DateTimeField,
                     enum=BaseField, float=FloatField, integer=IntegerField, interval=DateTimeField,
-                    numeric=IntegerField, pickle_type=BaseField, small_integer=IntegerField,
+                    numeric=FloatField, pickle_type=BaseField, small_integer=IntegerField,
                     string=StringField, text=StringField, time=DateTimeField, date_time=DateTimeField,
                     unicode=StringField, unicode_text=StringField, id=IntegerField, large_binary=StringField)
 
