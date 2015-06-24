@@ -218,7 +218,7 @@ class AlchemyManager(BaseManager):
                         self.pagination_count_query_arg: pagination_count}
 
         props = self.serialize_model(q[:pagination_count], field_dict=self.dot_field_list_to_dict(self.list_fields))
-        meta = dict(links=dict(next=next, prev=previous))
+        meta = dict(links=dict(next=next, previous=previous))
         return props, meta
 
     @db_access_point

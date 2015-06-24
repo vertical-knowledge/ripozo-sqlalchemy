@@ -1,7 +1,7 @@
 0.2.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Fixed bug in retrieve_list with improperly named link to previous ("prev" --> "previous")
 
 
 0.2.0 (2015-06-08)
