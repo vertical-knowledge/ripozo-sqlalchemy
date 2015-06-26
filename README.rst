@@ -3,27 +3,33 @@ ripozo-sqlalchemy
 
 .. image:: https://travis-ci.org/vertical-knowledge/ripozo-sqlalchemy.svg?branch=master&style=flat
     :target: https://travis-ci.org/vertical-knowledge/ripozo-sqlalchemy
+    :alt: test status
 
 .. image:: https://coveralls.io/repos/vertical-knowledge/ripozo-sqlalchemy/badge.svg?branch=master&style=flat
-  :target: https://coveralls.io/r/vertical-knowledge/ripozo-sqlalchemy?branch=master
+    :target: https://coveralls.io/r/vertical-knowledge/ripozo-sqlalchemy?branch=master
+    :alt: test coverage
 
 .. image:: https://readthedocs.org/projects/ripozo-sqlalchemy/badge/?version=latest&style=flat
     :target: https://ripozo-sqlalchemy.readthedocs.org/
     :alt: Documentation Status
 
-.. image:: https://pypip.in/version/ripozo-sqlalchemy/badge.svg?style=flat
-    :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
+..
 
-.. image:: https://pypip.in/d/ripozo-sqlalchemy/badge.png?style=flat
-    :target: https://crate.io/packages/ripozo-sqlalchemy/
-    :alt: Number of PyPI downloads
+    .. image:: https://pypip.in/version/ripozo-sqlalchemy/badge.svg?style=flat
+        :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
+        :alt: current version
 
-.. image:: https://pypip.in/wheel/ripozo-sqlalchemy/badge.svg?style=flat
-    :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
-    :alt: Wheel Status
+..
 
-.. image:: https://pypip.in/py_versions/ripozo-sqlalchemy/badge.svg?style=flat
-    :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
+    .. image:: https://pypip.in/d/ripozo-sqlalchemy/badge.png?style=flat
+        :target: https://crate.io/packages/ripozo-sqlalchemy/
+        :alt: Number of PyPI downloads
+
+..
+
+    .. image:: https://pypip.in/py_versions/ripozo-sqlalchemy/badge.svg?style=flat
+        :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
+        :alt: python versions
     
 This package is a ripozo extension that provides a Manager that integrate
 SQLAlchemy with ripozo.  It provides convience functions for generating resources.
@@ -40,18 +46,19 @@ resource.
 
 .. code-block:: python
 
-    from ripozo.decorators import apimethod
-    from ripozo.viewsets.resource_base import ResourceBase
+    from ripozo import apimethod, ResourceBase
     
-    from ripozo_sqlalchemy import AlchemyManager
+    from ripozo_sqlalchemy import AlchemyManager, SessionHandler
 
     from sqlalchemy import Column, Integer, String, create_engine
     from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import Session
     
     # Setup the database with sqlalchemy
-    Base = declarative_base(create_engine('sqlite:///:memory:', echo=True))
-    session = session_maker()()
+    engine = create_engine('sqlite:///:memory:', echo=True)
+    Base = declarative_base()
+    session = Session(engine)
+    session_handler = SessionHandler(session)
     
     # Declare your ORM model
     class Person(Base):
@@ -67,7 +74,6 @@ resource.
     # You give it the session, a SQLAlchemy Model, and the fields
     # You wish to serialize at a minimum.
     class PersonManager(AlchemyManager):
-        session = session
         model = Person
         fields = ('id', 'first_name', 'last_name')
         
@@ -76,9 +82,9 @@ resource.
     # This creates a resource class that can be given
     # to a dispatcher (e.g. the flask-ripozo package's FlaskDispatcher)
     class PersonResource(ResourceBase):
-        _manager = PersonManager
-        _pks = ['id']
-        _namespace = '/api'
+        manager = PersonManager
+        pks = ['id']
+        namespace = '/api'
         
         # A retrieval method that will operate on the '/api/person' route
         # It retrieves the id, first_name, and last_name properties
