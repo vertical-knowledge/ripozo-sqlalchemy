@@ -3,6 +3,7 @@
 
 - Fixed bug in retrieve_list with improperly named link to previous ("prev" --> "previous")
 - Removed all fields flag.
+- Renamed alcehmymanager to alchemymanager
 
 
 0.2.0 (2015-06-08)
