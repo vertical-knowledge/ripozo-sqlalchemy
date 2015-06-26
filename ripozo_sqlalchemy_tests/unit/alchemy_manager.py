@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ripozo_sqlalchemy.alcehmymanager import AlchemyManager, NoResultFound, NotFoundException
+from ripozo_sqlalchemy.alchemymanager import AlchemyManager, NoResultFound, NotFoundException
 
 import mock
 import unittest2
