@@ -19,13 +19,9 @@ ripozo-sqlalchemy
         :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
         :alt: current version
 
-..
-
     .. image:: https://pypip.in/d/ripozo-sqlalchemy/badge.png?style=flat
         :target: https://crate.io/packages/ripozo-sqlalchemy/
         :alt: Number of PyPI downloads
-
-..
 
     .. image:: https://pypip.in/py_versions/ripozo-sqlalchemy/badge.svg?style=flat
         :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
