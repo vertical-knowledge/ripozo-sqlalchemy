@@ -1,3 +1,6 @@
+"""
+Core pieces of the AlchemyManager
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -10,7 +13,8 @@ from functools import wraps
 from ripozo.exceptions import NotFoundException
 from ripozo.manager_base import BaseManager
 from ripozo.resources.fields.base import BaseField
-from ripozo.resources.fields.common import StringField, IntegerField, FloatField, DateTimeField, BooleanField
+from ripozo.resources.fields.common import StringField, IntegerField,\
+    FloatField, DateTimeField, BooleanField
 from ripozo.utilities import make_json_safe
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -19,25 +23,29 @@ from sqlalchemy.orm.query import Query
 import logging
 import six
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
-def db_access_point(f):
+def db_access_point(func):
     """
     Wraps a function that actually accesses the database.
     It injects a session into the method and attempts to handle
     it after the function has run.
 
-    :param method f: The method that is interacting with the database.
+    :param method func: The method that is interacting with the database.
     """
-    @wraps(f)
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
+        """
+        Wrapper responsible for handling
+        sessions
+        """
         session = self.session_handler.get_session()
         try:
-            resp = f(self, session, *args, **kwargs)
-        except Exception as e:
-            self.session_handler.handle_session(session, exc=e)
-            raise e
+            resp = func(self, session, *args, **kwargs)
+        except Exception as exc:
+            self.session_handler.handle_session(session, exc=exc)
+            raise exc
         else:
             self.session_handler.handle_session(session)
             return resp
@@ -99,16 +107,16 @@ class AlchemyManager(BaseManager):
             translating a string input into the appropriate format.
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
-        t = cls._get_field_python_type(cls.model, name)
-        if t in (six.text_type, six.binary_type):
+        python_type = cls._get_field_python_type(cls.model, name)
+        if python_type in (six.text_type, six.binary_type):
             return StringField(name)
-        elif t is int:
+        elif python_type is int:
             return IntegerField(name)
-        elif t in (float, Decimal,):
+        elif python_type in (float, Decimal,):
             return FloatField(name)
-        elif t in (datetime, date, timedelta, time):
+        elif python_type in (datetime, date, timedelta, time):
             return DateTimeField(name)
-        elif t is bool:
+        elif python_type is bool:
             return BooleanField(name)
         else:
             return BaseField(name)
@@ -168,30 +176,31 @@ class AlchemyManager(BaseManager):
             of the models and the dictionary of meta data
         :rtype: list, dict
         """
-        q = self.queryset(session)
+        query = self.queryset(session)
         pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
         pagination_pk = filters.pop(self.pagination_pk_query_arg, 1)
         pagination_pk -= 1  # logic works zero based. Pagination shouldn't be though
 
-        q = q.filter_by(**filters)
+        query = query.filter_by(**filters)
 
         if pagination_pk:
-            q = q.offset(pagination_pk * pagination_count)
+            query = query.offset(pagination_pk * pagination_count)
         if pagination_count:
-            q = q.limit(pagination_count + 1)
+            query = query.limit(pagination_count + 1)
 
-        count = q.count()
-        next = None
-        previous = None
+        count = query.count()
+        next_link = None
+        previous_link = None
         if count > pagination_count:
-            next = {self.pagination_pk_query_arg: pagination_pk + 2,
-                    self.pagination_count_query_arg: pagination_count}
+            next_link = {self.pagination_pk_query_arg: pagination_pk + 2,
+                         self.pagination_count_query_arg: pagination_count}
         if pagination_pk > 0:
-            previous = {self.pagination_pk_query_arg: pagination_pk,
-                        self.pagination_count_query_arg: pagination_count}
+            previous_link = {self.pagination_pk_query_arg: pagination_pk,
+                             self.pagination_count_query_arg: pagination_count}
 
-        props = self.serialize_model(q[:pagination_count], field_dict=self.dot_field_list_to_dict(self.list_fields))
-        meta = dict(links=dict(next=next, previous=previous))
+        field_dict = self.dot_field_list_to_dict(self.list_fields)
+        props = self.serialize_model(query[:pagination_count], field_dict=field_dict)
+        meta = dict(links=dict(next=next_link, previous=previous_link))
         return props, meta
 
     @db_access_point
@@ -256,6 +265,10 @@ class AlchemyManager(BaseManager):
         return make_json_safe(response)
 
     def _serialize_model_helper(self, model, field_dict=None):
+        """
+        A recursive function for serializing a model
+        into a json ready format.
+        """
         field_dict = field_dict or self.dot_field_list_to_dict()
         if model is None:
             return None
