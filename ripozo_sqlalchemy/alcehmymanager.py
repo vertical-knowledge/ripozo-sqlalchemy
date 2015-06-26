@@ -58,32 +58,12 @@ class AlchemyManager(BaseManager):
     """
     pagination_pk_query_arg = 'page'
     all_fields = False
+    fields = tuple()
 
     def __init__(self, session_handler, *args, **kwargs):
         super(AlchemyManager, self).__init__(*args, **kwargs)
         self._field_dict = None
         self.session_handler = session_handler
-
-    @classproperty
-    def fields(cls):
-        """
-        :return: Returns the _fields attribute if it is available.  If it
-            is not and the cls.all_fields attribute is set to True,
-            then it will return all of the columns names on the model.
-            Otherwise it will return an empty list
-        :rtype: list
-        """
-        if not cls._fields and cls.all_fields is True:
-            fields = []
-            for name in cls.model._sa_class_manager:
-                prop = getattr(cls.model, name)
-                if isinstance(prop.property, RelationshipProperty):
-                    for pk in class_mapper(prop.class_).primary_key:
-                        fields.append('{0}.{1}'.format(name, pk.name))
-                else:
-                    fields.append(name)
-            cls._fields = fields
-        return cls._fields or []
 
     @staticmethod
     def _get_field_python_type(model, name):

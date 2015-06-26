@@ -82,19 +82,12 @@ class CommonTest(object):
         attribute correctly gets all of the fields.
         """
         class NoFieldsManager(self._manager):
-            _fields = []
+            fields = []
 
         # Make sure the fields are empty.
         self.assertEqual(NoFieldsManager.fields, [])
         self.assertEqual(len(NoFieldsManager.fields), 0)
         self.assertIsInstance(NoFieldsManager.fields, list)
-
-        class AllFieldsManager(NoFieldsManager):
-            all_fields = True
-
-        for field in self._manager.fields:
-            self.assertIn(field, AllFieldsManager.fields)
-        self.assertEqual(len(self._manager.fields), len(AllFieldsManager.fields))
 
     def test_create(self):
         values = self.get_fake_values()

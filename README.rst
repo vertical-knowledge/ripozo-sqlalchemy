@@ -37,6 +37,8 @@ In particular, it focuses on creating shortcuts for CRUD type operations.  It fu
 implements the BaseManager_ class that is provided in the
 ripozo_ package.
 
+`Full Documentation <http://ripozo-sqlalchemy.readthedocs.org/en/latest/>`_
+
 Example
 =======
 

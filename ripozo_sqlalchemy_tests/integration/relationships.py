@@ -49,7 +49,7 @@ class TestOneToManyRelationship(CommonTest, unittest2.TestCase):
         class DefaultManager(AlchemyManager):
             session = self.session
             model = One
-            _fields = ['id', 'value', 'manies.id']
+            fields = ['id', 'value', 'manies.id']
 
         self.model = One
         self._manager = DefaultManager
@@ -127,7 +127,7 @@ class TestOneToManyRelationship(CommonTest, unittest2.TestCase):
         class ManyManager(AlchemyManager):
             session = self.session
             model = self.Many
-            _fields = ('id', 'many_value', 'one.id',)
+            fields = ('id', 'many_value', 'one.id',)
 
         parent = self.create_one()
         child1 = self.create_many(one_id=parent.id)
@@ -142,7 +142,7 @@ class TestOneToManyRelationship(CommonTest, unittest2.TestCase):
         class ManyManager(AlchemyManager):
             session = self.session
             model = self.Many
-            _fields = ('id', 'many_value', 'one.id', 'one.value')
+            fields = ('id', 'many_value', 'one.id', 'one.value')
 
         parent = self.create_one()
         child1 = self.create_many(one_id=parent.id)
@@ -158,7 +158,7 @@ class TestOneToManyRelationship(CommonTest, unittest2.TestCase):
         class ManyManager(AlchemyManager):
             session = self.session
             model = self.Many
-            _fields = ('id', 'many_value', 'one_id',)
+            fields = ('id', 'many_value', 'one_id',)
 
         parent = self.create_one()
         child1 = self.create_many(one_id=parent.id)
@@ -190,7 +190,7 @@ class TestOneToManyRelationshipLazy(TestOneToManyRelationship):
 
         class DefaultManager(AlchemyManager):
             model = One
-            _fields = ['id', 'value', 'manies.id']
+            fields = ['id', 'value', 'manies.id']
 
         self.model = One
         self._manager = DefaultManager

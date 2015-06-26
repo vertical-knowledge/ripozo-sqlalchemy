@@ -9,7 +9,7 @@ Welcome to ripozo-sqlachemy's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    API.rst
    examples/basic_example.rst

@@ -57,10 +57,10 @@ class TestColumnTypes(CommonTest, unittest2.TestCase):
 
         class ModelManager(AlchemyManager):
             model = self.model
-            _fields = ['id', 'big_integer', 'boolean', 'date', 'date_time',
-                       'enum', 'float', 'integer', 'interval', 'large_binary',
-                       'numeric', 'pickle_type', 'small_integer',
-                       'string', 'text', 'time', 'unicode', 'unicode_text']
+            fields = ['id', 'big_integer', 'boolean', 'date', 'date_time',
+                      'enum', 'float', 'integer', 'interval', 'large_binary',
+                      'numeric', 'pickle_type', 'small_integer',
+                      'string', 'text', 'time', 'unicode', 'unicode_text']
 
         self._manager = ModelManager
 
