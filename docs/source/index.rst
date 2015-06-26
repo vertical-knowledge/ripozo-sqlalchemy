@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    API.rst
+   examples/basic_example.rst
 
 .. include:: ../../README.rst
 
