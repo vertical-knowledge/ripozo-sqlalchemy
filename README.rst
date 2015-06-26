@@ -14,11 +14,10 @@ ripozo-sqlalchemy
     :alt: Documentation Status
 
 ..
-
     .. image:: https://pypip.in/version/ripozo-sqlalchemy/badge.svg?style=flat
         :target: https://pypi.python.org/pypi/ripozo-sqlalchemy/
         :alt: current version
-
+        
     .. image:: https://pypip.in/d/ripozo-sqlalchemy/badge.png?style=flat
         :target: https://crate.io/packages/ripozo-sqlalchemy/
         :alt: Number of PyPI downloads
