@@ -24,7 +24,8 @@ setup(
     tests_require=[
         'unittest2',
         'tox',
-        'mock'
+        'mock',
+        'pylint'
     ],
     test_suite="ripozo_sqlalchemy_tests",
     classifiers=[
