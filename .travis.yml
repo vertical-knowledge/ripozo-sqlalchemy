@@ -14,9 +14,10 @@ install:
   - pip install coveralls
   - pip install $SQLALCHEMY_VERSION
   - pip install $RIPOZO
+  - pip install pylint
   - python setup.py -q install
 script:
   - coverage run --source=ripozo_sqlalchemy setup.py test
-  - pylint
+  - pylint ripozo_sqlalchemy
 after_success:
   coveralls
