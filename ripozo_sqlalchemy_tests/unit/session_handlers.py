@@ -26,6 +26,13 @@ class TestScopedSessionHandler(unittest2.TestCase):
         handler.handle_session(session)
         self.assertTrue(session.close.called)
 
+    def test_handle_session_exception(self):
+        session = mock.MagicMock()
+        handler = ScopedSessionHandler(session)
+        e = Exception()
+        handler.handle_session(session, exc=e)
+        self.assertTrue(session.rollback.called)
+
 
 class TestSessionHandler(unittest2.TestCase):
     def test_get_session(self):
@@ -38,4 +45,11 @@ class TestSessionHandler(unittest2.TestCase):
         session = mock.MagicMock()
         handler = SessionHandler(session)
         self.assertIsNone(handler.handle_session(session))
+
+    def test_handle_session_exception(self):
+        session = mock.MagicMock()
+        handler = SessionHandler(session)
+        e = Exception()
+        handler.handle_session(session, exc=e)
+        self.assertTrue(session.rollback.called)
 

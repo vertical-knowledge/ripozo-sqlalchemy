@@ -36,12 +36,16 @@ class ScopedSessionHandler(object):
         return self.session_maker()
 
     @staticmethod
-    def handle_session(session):
+    def handle_session(session, exc=None):
         """
         Handles closing a session.
 
         :param Session session: The session to close.
+        :param Exception exc: The exception raised,
+            If an exception was raised, else None
         """
+        if exc:
+            session.rollback()
         session.close()
 
 
@@ -57,6 +61,8 @@ class SessionHandler(object):
         :param Session session: The session to pass
             to the Manager.  This is what will be directly
             used by the application
+        :param Exception exc: The exception raised,
+            If an exception was raised, else None
         """
         self.session = session
 
@@ -70,8 +76,13 @@ class SessionHandler(object):
         return self.session
 
     @staticmethod
-    def handle_session(session):
+    def handle_session(session, exc=None):
         """
-        Doesn't do anything at all.
+        rolls back the session if appropriate.
+
+        :param Session session: The session in use.
+        :param Exception exc: The exception raised,
+            If an exception was raised, else None
         """
-        return
+        if exc:
+            session.rollback()
