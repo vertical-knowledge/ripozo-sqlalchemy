@@ -14,6 +14,14 @@ from sqlalchemy.orm import class_mapper, RelationshipProperty
 
 
 def _get_fields_for_model(model):
+    """
+    Gets all of the fields on the model.
+
+    :param DeclarativeModel model: A SQLAlchemy ORM Model
+    :return: A tuple of the fields on the Model corresponding
+        to the columns on the Model.
+    :rtype: tuple
+    """
     fields = []
     for name in model._sa_class_manager:
         prop = getattr(model, name)
@@ -26,10 +34,27 @@ def _get_fields_for_model(model):
 
 
 def _get_pks(model):
+    """
+    Gets a tuple of the primary keys
+    on the model.
+
+    :param DeclarativeMeta model: The SQLAlchemy ORM model.
+    :return: tuple of unicode primary key column names
+    :rtype: tuple
+    """
     return tuple([key.name for key in inspect(model).primary_key])
 
 
 def _get_relationships(model):
+    """
+    Gets the necessary relationships for the resource
+    by inspecting the sqlalchemy model for relationships.
+
+    :param DeclarativeMeta model: The SQLAlchemy ORM model.
+    :return: A tuple of Relationship/ListRelationship instances
+        corresponding to the relationships on the Model.
+    :rtype: tuple
+    """
     relationships = []
     for name in model._sa_class_manager:
         prop = getattr(model, name)
@@ -48,18 +73,40 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
                     postprocessors=None, fields=None, paginate_by=100,
                     auto_relationships=True, pks=None):
         """
+        Creates a ResourceBase subclass by inspecting a SQLAlchemy
+        Model. This is somewhat more restrictive than explicitly
+        creating managers and resources.  However, if you only need
+        any of the basic CRUD+L operations,
 
-        :param sqlalchemy.Model model:
-        :param tuple resource_bases:
-        :param tuple relationships:
-        :param tuple links:
-        :param tuple preprocessors:
-        :param tuple postprocessors:
-        :param ripozo_sqlalchemy.SessionHandler session_handler:
-        :param tuple fields:
-        :param bool auto_relationships:
+        :param sqlalchemy.Model model:  This is the model that
+            will be inspected to create a Resource and Manager from.
+            By default, all of it's fields will be exposed, although
+            this can be overridden using the fields attribute.
+        :param tuple resource_bases: A tuple of ResourceBase subclasses.
+            Defaults to the restmixins.CRUDL class only.  However if you only
+            wanted Update and Delete you could pass in
+            ```(restmixins.Update,  restmixins.Delete)``` which
+            would cause the resource to inherit from those two.
+            Additionally, you could create your own mixins and pass them in
+            as the resource_bases
+        :param tuple relationships: extra relationships to pass
+            into the ResourceBase constructor.  If auto_relationships
+            is set to True, then they will be appended to these relationships.
+        :param tuple links: Extra links to pass into the ResourceBase as
+            the class _links attribute.  Defaults to an empty tuple.
+        :param tuple preprocessors: Preprocessors for the resource class attribute.
+        :param tuple postprocessors: Postprocessors for the resource class attribute.
+        :param ripozo_sqlalchemy.SessionHandler session_handler: A session handler
+            to use when instantiating an instance of the Manager class created
+            from the model.  This is responsible for getting and handling
+            sessions in both normal cases and exceptions.
+        :param tuple fields: The fields to expose on the api.  Defaults to
+            all of the fields on the model.
+        :param bool auto_relationships: If True, then the SQLAlchemy Model
+            will be inspected for relationships and they will be automatically
+            appended to the relationships on the resource class attribute.
         :return: A ResourceBase subclass and AlchemyManager subclass
-        :rtype: ResourceMetaClass, type
+        :rtype: ResourceMetaClass
         """
         relationships = relationships or tuple()
         if auto_relationships:
