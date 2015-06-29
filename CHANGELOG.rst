@@ -4,6 +4,7 @@
 - Fixed bug in retrieve_list with improperly named link to previous ("prev" --> "previous")
 - Removed all fields flag.
 - Renamed alcehmymanager to alchemymanager
+- easy resources added.  By simply calling create_resource with a session_handler and sqlalchemy model, you can automatically create a full resource. and immediately add it to a dispatcher.
 
 
 0.2.0 (2015-06-08)
