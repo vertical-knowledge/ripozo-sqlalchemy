@@ -41,21 +41,18 @@ This is a minimal example of creating ripozo managers
 with ripozo-sqlalchemy and integrating them with a 
 resource.
 
+First we need to setup our SQLAlchemy model.
+
 .. code-block:: python
 
     from ripozo import apimethod, ResourceBase
-    
-    from ripozo_sqlalchemy import AlchemyManager, SessionHandler
 
     from sqlalchemy import Column, Integer, String, create_engine
     from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.orm import Session
     
     # Setup the database with sqlalchemy
     engine = create_engine('sqlite:///:memory:', echo=True)
     Base = declarative_base()
-    session = Session(engine)
-    session_handler = SessionHandler(session)
     
     # Declare your ORM model
     class Person(Base):
@@ -66,6 +63,16 @@ resource.
         
     # Sync the models wiht the database
     Base.metadata.create_all()
+
+Now we can get to the ripozo-sqlalchemy part.
+
+.. code-block:: python
+
+    from ripozo_sqlalchemy import AlchemyManager, ScopedSessionHandler
+
+    # A session handler if responsible for getting
+    # And handling a session after either a successful or unsuccesful request
+    session_handler = ScopedSessionHandler(engine)
     
     # This is the code that is specific to ripozo-sqlalchemy
     # You give it the session, a SQLAlchemy Model, and the fields
@@ -79,7 +86,7 @@ resource.
     # This creates a resource class that can be given
     # to a dispatcher (e.g. the flask-ripozo package's FlaskDispatcher)
     class PersonResource(ResourceBase):
-        manager = PersonManager
+        manager = PersonManager(session_handler)
         pks = ['id']
         namespace = '/api'
         
@@ -90,7 +97,39 @@ resource.
             properties = self.manager.retrieve(primary_keys)
             return cls(properties=properties)
         
-    
+Alternatively, we could use the create_resource method which
+will automatically create a manager and resource that corresponds
+to the manager.
+
+.. code-block:: python
+
+    from ripozo import restmixins
+    from ripozo_sqlalchemy import ScopedSessionHandler, create_resource
+
+    session_handler = ScopedSessionHandler(engine)
+    person_resource_class = create_resource(Person, session_handler)
+
+By default create_resource will give you full CRUD+L (Create, Retrieve, Update, Delete, List).
+Although there are many options that you can pass to create_resource to modify exactly how
+the resource class is constructed.
+
+After you create your resource class, you will need to load it into a dispatcher
+corresponding to your framework.  For example, in flask-ripozo
+
+.. code-block:: python
+
+    from flask import Flask
+    from flask_ripozo import FlaskDispatcher
+    from ripozo.adapters import SirenAdapter, HalAdapter # These are the potential formats to return
+
+    app = Flask(__name__)
+    dispatcher = FlaskDispatcher(app)
+    dispatcher.register_adapters(SirenAdapter, HalAdapter)
+    dispatcher.register_resources(person_resource_class)
+    # or in the first style of generating resources
+    # dispatcher.register_resources(PersonResource)
+
+    app.run()
     
 
 .. _BaseManager: https://ripozo.readthedocs.org/en/latest/API/ripozo.managers.html#ripozo.managers.base.BaseManager

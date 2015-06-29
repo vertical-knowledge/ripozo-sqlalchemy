@@ -15,3 +15,8 @@ ripozo-sqlalchemy API
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. automodule:: ripozo_sqlalchemy.easy_resource
+    :members:
+    :undoc-members:
+    :show-inheritance:
