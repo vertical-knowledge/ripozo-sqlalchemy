@@ -59,11 +59,11 @@ def _get_relationships(model):
     for name in model._sa_class_manager:
         prop = getattr(model, name)
         if isinstance(prop.property, RelationshipProperty):
-            if prop._supports_population:
-                class_ = inspect(model).relationships._data[name].mapper.class_
+            class_ = inspect(model).relationships._data[name].mapper.class_
+            if prop.property.uselist:
                 rel = ListRelationship(name, relation=class_.__name__)
             else:
-                rel = Relationship(name, relation=prop.class_.__name__)
+                rel = Relationship(name, relation=class_.__name__)
             relationships.append(rel)
     return tuple(relationships)
 

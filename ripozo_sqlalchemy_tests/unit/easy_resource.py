@@ -22,6 +22,9 @@ class TestEasyResource(unittest2.TestCase):
         for val in first:
             self.assertIn(val, second)
 
+    def assertIsNotInstance(self, obj, types):
+        self.assertFalse(isinstance(obj, types))
+
     def test_get_pks_single(self):
         Base = declarative_base()
 
@@ -188,6 +191,7 @@ class TestEasyResource(unittest2.TestCase):
         self.assertEqual(len(resp), 1)
         rel = resp[0]
         self.assertIsInstance(rel, Relationship)
+        self.assertIsNotInstance(rel, ListRelationship)
         self.assertEqual(rel.name, 'parent')
         self.assertEqual(rel._relation, 'Parent')
 
@@ -211,6 +215,7 @@ class TestEasyResource(unittest2.TestCase):
         self.assertEqual(len(resp), 1)
         rel = resp[0]
         self.assertIsInstance(rel, Relationship)
+        self.assertIsNotInstance(rel, ListRelationship)
         self.assertEqual(rel.name, 'child')
         self.assertEqual(rel._relation, 'Child')
 
@@ -241,6 +246,7 @@ class TestEasyResource(unittest2.TestCase):
         self.assertEqual(len(resp), 1)
         rel = resp[0]
         self.assertIsInstance(rel, Relationship)
+        self.assertIsNotInstance(rel, ListRelationship)
         self.assertEqual(rel.name, 'child')
         self.assertEqual(rel._relation, 'Child')
 
@@ -248,6 +254,7 @@ class TestEasyResource(unittest2.TestCase):
         self.assertEqual(len(resp), 1)
         rel = resp[0]
         self.assertIsInstance(rel, Relationship)
+        self.assertIsNotInstance(rel, ListRelationship)
         self.assertEqual(rel.name, 'parent')
         self.assertEqual(rel._relation, 'Parent')
 
