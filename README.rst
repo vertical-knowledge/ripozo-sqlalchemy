@@ -96,6 +96,9 @@ Now we can get to the ripozo-sqlalchemy part.
         def get_person(cls, primary_keys, filters, values, *args, **kwargs):
             properties = self.manager.retrieve(primary_keys)
             return cls(properties=properties)
+            
+Easy Resources
+^^^^^^^^^^^^^^
         
 Alternatively, we could use the create_resource method which
 will automatically create a manager and resource that corresponds
