@@ -25,6 +25,19 @@ import six
 
 _logger = logging.getLogger(__name__)
 
+_COLUMN_FIELD_MAP = {
+    six.text_type: StringField,
+    six.binary_type: StringField,
+    int: IntegerField,
+    float: FloatField,
+    Decimal: FloatField,
+    datetime: DateTimeField,
+    date: DateTimeField,
+    timedelta: DateTimeField,
+    time: DateTimeField,
+    bool: BooleanField,
+}
+
 
 def db_access_point(func):
     """
@@ -108,18 +121,10 @@ class AlchemyManager(BaseManager):
         :rtype: ripozo.viewsets.fields.base.BaseField
         """
         python_type = cls._get_field_python_type(cls.model, name)
-        if python_type in (six.text_type, six.binary_type):
-            return StringField(name)
-        elif python_type is int:
-            return IntegerField(name)
-        elif python_type in (float, Decimal,):
-            return FloatField(name)
-        elif python_type in (datetime, date, timedelta, time):
-            return DateTimeField(name)
-        elif python_type is bool:
-            return BooleanField(name)
-        else:
-            return BaseField(name)
+        if python_type in _COLUMN_FIELD_MAP:
+            field_class = _COLUMN_FIELD_MAP[python_type]
+            return field_class(name)
+        return BaseField(name)
 
     @db_access_point
     def create(self, session, values, *args, **kwargs):
