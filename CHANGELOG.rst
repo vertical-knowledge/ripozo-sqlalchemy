@@ -1,5 +1,5 @@
-1.0.0b2 (unreleased)
-====================
+1.0.0 (2015-06-30)
+==================
 
 - Added _COLUMN_FIELD_MAP for determining python type.  Transparent change.
 
