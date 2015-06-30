@@ -65,3 +65,5 @@ setup.cfg
 
 # Performance testing stuff
 *.profile
+
+docs/build

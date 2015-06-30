@@ -7,7 +7,7 @@ ripozo-sqlalchemy example
     import logging
     logging.disable(logging.ERROR)
 
-.. testsetup:: basic
+.. testcode:: basic
 
     from sqlalchemy import Column, Integer, String, create_engine
     from sqlalchemy.ext.declarative import declarative_base
@@ -31,7 +31,7 @@ ripozo-sqlalchemy example
 Creatings your manager
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. testsetup:: basic
+.. testcode:: basic
 
     from ripozo_sqlalchemy import AlchemyManager, SessionHandler
 
@@ -46,7 +46,7 @@ Creatings your manager
 And the resource...
 ^^^^^^^^^^^^^^^^^^^
 
-.. testsetup:: basic
+.. testcode:: basic
 
     from ripozo import restmixins
 
