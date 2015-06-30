@@ -1,5 +1,5 @@
-0.3.0 (unreleased)
-==================
+1.0.0b1 (2015-06-29)
+====================
 
 - Fixed bug in retrieve_list with improperly named link to previous ("prev" --> "previous")
 - Removed all fields flag.
