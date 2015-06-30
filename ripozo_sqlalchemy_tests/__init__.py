@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from ripozo_sqlalchemy_tests import unit, integration
 
 from logging import config
-import logging
 
 try:
     config.dictConfig(
