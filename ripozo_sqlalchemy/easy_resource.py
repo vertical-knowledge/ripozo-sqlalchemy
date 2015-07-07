@@ -71,7 +71,8 @@ def _get_relationships(model):
 def create_resource(model, session_handler, resource_bases=(CRUDL,),
                     relationships=None, links=None, preprocessors=None,
                     postprocessors=None, fields=None, paginate_by=100,
-                    auto_relationships=True, pks=None):
+                    auto_relationships=True, pks=None, create_fields=None,
+                    update_fields=None, list_fields=None):
         """
         Creates a ResourceBase subclass by inspecting a SQLAlchemy
         Model. This is somewhat more restrictive than explicitly
@@ -105,6 +106,15 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
         :param bool auto_relationships: If True, then the SQLAlchemy Model
             will be inspected for relationships and they will be automatically
             appended to the relationships on the resource class attribute.
+        :param list create_fields: A list of the fields that are valid when
+            creating a resource.  By default this will be the fields without
+            any primary keys included
+        :param list update_fields: A list of the fields that are valid when
+            updating a resource.  By default this will be the fields without
+            any primary keys included
+        :param list list_fields: A list of the fields that will be returned
+            when the list endpoint is requested.  Defaults to the fields
+            attribute.
         :return: A ResourceBase subclass and AlchemyManager subclass
         :rtype: ResourceMetaClass
         """
@@ -116,8 +126,14 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
         postprocessors = postprocessors or tuple()
         pks = pks or _get_pks(model)
         fields = fields or _get_fields_for_model(model)
+        list_fields = list_fields or fields
 
-        manager_cls_attrs = dict(paginate_by=paginate_by, fields=fields, model=model)
+        create_fields = create_fields or [x for x in fields if x not in set(pks)]
+        update_fields = update_fields or [x for x in fields if x not in set(pks)]
+
+        manager_cls_attrs = dict(paginate_by=paginate_by, fields=fields, model=model,
+                                 list_fields=list_fields, create_fields=create_fields,
+                                 update_fields=update_fields)
         manager_class = type(str(model.__name__), (AlchemyManager,), manager_cls_attrs)
         manager = manager_class(session_handler)
 

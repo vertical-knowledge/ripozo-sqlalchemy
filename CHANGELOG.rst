@@ -1,7 +1,7 @@
 1.0.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Easy resources updated to use create_fields, update_fields, and list_fields options.
 
 
 1.0.0 (2015-06-30)
