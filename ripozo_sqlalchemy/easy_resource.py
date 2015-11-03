@@ -97,7 +97,7 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
             the class _links attribute.  Defaults to an empty tuple.
         :param tuple preprocessors: Preprocessors for the resource class attribute.
         :param tuple postprocessors: Postprocessors for the resource class attribute.
-        :param ripozo_sqlalchemy.SessionHandler session_handler: A session handler
+        :param ripozo_sqlalchemy.SessionHandler|ripozo_sqlalchemy.ScopedSessionHandler session_handler: A session handler
             to use when instantiating an instance of the Manager class created
             from the model.  This is responsible for getting and handling
             sessions in both normal cases and exceptions.
