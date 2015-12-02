@@ -5,12 +5,12 @@ from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 
-version = '1.0.1'
+version = '1.0.2.dev0'
 
 setup(
     name='ripozo-sqlalchemy',
     version=version,
-    packages=find_packages(exclude=['tests', 'tests.*']),
+    packages=find_packages(include=['tests', 'tests.*']),
     url='',
     license='',
     author='Tim Martin',
