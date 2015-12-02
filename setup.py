@@ -10,8 +10,8 @@ version = '1.0.2.dev0'
 setup(
     name='ripozo-sqlalchemy',
     version=version,
-    packages=find_packages(include=['tests', 'tests.*']),
-    url='',
+    packages=find_packages(include=['ripozo_sqlalchemy', 'ripozo_sqlalchemy.*']),
+    url='https://github.com/vertical-knowledge/ripozo-sqlalchemy',
     license='',
     author='Tim Martin',
     author_email='tim.martin@vertical-knowledge.com',
