@@ -2,6 +2,8 @@
 ==================
 
 - Easy resources updated to use create_fields, update_fields, and list_fields options.
+- append_slash option added to easy resources
+- Simplified mechanism of getting relationships to avoid private variables
 
 
 1.0.0 (2015-06-30)

@@ -56,15 +56,13 @@ def _get_relationships(model):
     :rtype: tuple
     """
     relationships = []
-    for name in model._sa_class_manager:
-        prop = getattr(model, name)
-        if isinstance(prop.property, RelationshipProperty):
-            class_ = inspect(model).relationships._data[name].mapper.class_
-            if prop.property.uselist:
-                rel = ListRelationship(name, relation=class_.__name__)
-            else:
-                rel = Relationship(name, relation=class_.__name__)
-            relationships.append(rel)
+    for name, relationship in inspect(model).relationships.items():
+        class_ = relationship.mapper.class_
+        if relationship.uselist:
+            rel = ListRelationship(name, relation=class_.__name__)
+        else:
+            rel = Relationship(name, relation=class_.__name__)
+        relationships.append(rel)
     return tuple(relationships)
 
 
@@ -72,7 +70,7 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
                     relationships=None, links=None, preprocessors=None,
                     postprocessors=None, fields=None, paginate_by=100,
                     auto_relationships=True, pks=None, create_fields=None,
-                    update_fields=None, list_fields=None):
+                    update_fields=None, list_fields=None, append_slash=False):
         """
         Creates a ResourceBase subclass by inspecting a SQLAlchemy
         Model. This is somewhat more restrictive than explicitly
@@ -115,6 +113,8 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
         :param list list_fields: A list of the fields that will be returned
             when the list endpoint is requested.  Defaults to the fields
             attribute.
+        :param bool append_slash: A flag to forcibly append slashes to
+            the end of urls.
         :return: A ResourceBase subclass and AlchemyManager subclass
         :rtype: ResourceMetaClass
         """
@@ -140,6 +140,6 @@ def create_resource(model, session_handler, resource_bases=(CRUDL,),
         resource_cls_attrs = dict(preprocessors=preprocessors,
                                   postprocessors=postprocessors,
                                   _relationships=relationships, _links=links,
-                                  pks=pks, manager=manager)
+                                  pks=pks, manager=manager, append_slash=append_slash)
         res_class = ResourceMetaClass(str(model.__name__), resource_bases, resource_cls_attrs)
         return res_class
