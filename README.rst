@@ -71,7 +71,7 @@ Now we can get to the ripozo-sqlalchemy part.
     from ripozo_sqlalchemy import AlchemyManager, ScopedSessionHandler
 
     # A session handler if responsible for getting
-    # And handling a session after either a successful or unsuccesful request
+    # And handling a session after either a successful or unsuccessful request
     session_handler = ScopedSessionHandler(engine)
     
     # This is the code that is specific to ripozo-sqlalchemy
@@ -90,11 +90,12 @@ Now we can get to the ripozo-sqlalchemy part.
         pks = ['id']
         namespace = '/api'
         
-        # A retrieval method that will operate on the '/api/person' route
-        # It retrieves the id, first_name, and last_name properties
+        # A retrieval method that will operate on the '/api/person/<id>' route
+        # It retrieves the id, first_name, and last_name properties for the
+        # resource as identified by the url parameter id.
         @apimethod(methods=['GET'])
-        def get_person(cls, primary_keys, filters, values, *args, **kwargs):
-            properties = self.manager.retrieve(primary_keys)
+        def get_person(cls, request):
+            properties = self.manager.retrieve(request)
             return cls(properties=properties)
             
 Easy Resources
