@@ -95,7 +95,7 @@ Now we can get to the ripozo-sqlalchemy part.
         # resource as identified by the url parameter id.
         @apimethod(methods=['GET'])
         def get_person(cls, request):
-            properties = self.manager.retrieve(request)
+            properties = cls.manager.retrieve(request.url_params)
             return cls(properties=properties)
             
 Easy Resources
