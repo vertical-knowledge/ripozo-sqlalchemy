@@ -111,7 +111,7 @@ to the manager.
     from ripozo_sqlalchemy import ScopedSessionHandler, create_resource
 
     session_handler = ScopedSessionHandler(engine)
-    person_resource_class = create_resource(Person, session_handler)
+    PersonResource = create_resource(Person, session_handler)
 
 By default create_resource will give you full CRUD+L (Create, Retrieve, Update, Delete, List).
 Although there are many options that you can pass to create_resource to modify exactly how
@@ -129,9 +129,7 @@ corresponding to your framework.  For example, in flask-ripozo
     app = Flask(__name__)
     dispatcher = FlaskDispatcher(app)
     dispatcher.register_adapters(SirenAdapter, HalAdapter)
-    dispatcher.register_resources(person_resource_class)
-    # or in the first style of generating resources
-    # dispatcher.register_resources(PersonResource)
+    dispatcher.register_resources(PersonResource)
 
     app.run()
     
