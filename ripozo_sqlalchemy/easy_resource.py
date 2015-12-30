@@ -26,7 +26,7 @@ def _get_fields_for_model(model):
     for name in model._sa_class_manager:
         prop = getattr(model, name)
         if isinstance(prop.property, RelationshipProperty):
-            for pk in class_mapper(prop.class_).primary_key:
+            for pk in prop.property.mapper.primary_key:
                 fields.append('{0}.{1}'.format(name, pk.name))
         else:
             fields.append(name)
