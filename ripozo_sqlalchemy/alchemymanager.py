@@ -182,7 +182,7 @@ class AlchemyManager(BaseManager):
         :rtype: list, dict
         """
         query = self.queryset(session)
-        translator = _COLUMN_FIELD_MAP[int]('tmp')
+        translator = IntegerField('tmp')
         pagination_count = translator.translate(
             filters.pop(self.pagination_count_query_arg, self.paginate_by)
         )
