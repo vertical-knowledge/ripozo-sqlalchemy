@@ -152,3 +152,31 @@ class TestPagination(unittest2.TestCase):
             self.assertEqual(len(resource.properties['my_resource']), 10)
             count += 1
         self.assertEqual(11, count)
+
+
+    def test_retrieve_list_works_with_pagination_filters_that_are_not_int(self):
+        """
+        Tests that retrieve_list correctly translates filters to int before
+        using them for arithmetic
+        """
+        self.create_models(count=42)
+
+        filters = {
+            self.manager.pagination_count_query_arg: ["10"],
+            self.manager.pagination_pk_query_arg: ["2"]
+        }
+        props, meta = self.manager.retrieve_list(filters=filters)
+        self.assertEqual(meta['links']['next']['page'], 3)
+        self.assertEqual(meta['links']['next']['count'], 10)
+        self.assertEqual(meta['links']['previous']['page'], 1)
+        self.assertEqual(meta['links']['previous']['count'], 10)
+
+        filters = {
+            self.manager.pagination_count_query_arg: "10",
+            self.manager.pagination_pk_query_arg: "2"
+        }
+        props, meta = self.manager.retrieve_list(filters=filters)
+        self.assertEqual(meta['links']['next']['page'], 3)
+        self.assertEqual(meta['links']['next']['count'], 10)
+        self.assertEqual(meta['links']['previous']['page'], 1)
+        self.assertEqual(meta['links']['previous']['count'], 10)

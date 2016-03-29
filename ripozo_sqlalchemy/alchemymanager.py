@@ -182,8 +182,13 @@ class AlchemyManager(BaseManager):
         :rtype: list, dict
         """
         query = self.queryset(session)
-        pagination_count = filters.pop(self.pagination_count_query_arg, self.paginate_by)
-        pagination_pk = filters.pop(self.pagination_pk_query_arg, 1)
+        translator = IntegerField('tmp')
+        pagination_count = translator.translate(
+            filters.pop(self.pagination_count_query_arg, self.paginate_by)
+        )
+        pagination_pk = translator.translate(
+            filters.pop(self.pagination_pk_query_arg, 1)
+        )
         pagination_pk -= 1  # logic works zero based. Pagination shouldn't be though
 
         query = query.filter_by(**filters)
