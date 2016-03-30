@@ -10,6 +10,7 @@ import string
 
 from ripozo.resources.fields.common import StringField, IntegerField, \
     FloatField, BooleanField, DateTimeField, BaseField
+from ripozo.resources.fields.field import IField
 from sqlalchemy import Column, create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
@@ -67,7 +68,7 @@ class TestColumnTypes(CommonTest, unittest2.TestCase):
     @property
     def field_dict(self):
         return dict(big_integer=IntegerField, boolean=BooleanField, date=DateTimeField,
-                    enum=BaseField, float=FloatField, integer=IntegerField, interval=DateTimeField,
+                    enum=IField, float=FloatField, integer=IntegerField, interval=DateTimeField,
                     numeric=FloatField, pickle_type=BaseField, small_integer=IntegerField,
                     string=StringField, text=StringField, time=DateTimeField, date_time=DateTimeField,
                     unicode=StringField, unicode_text=StringField, id=IntegerField, large_binary=StringField)

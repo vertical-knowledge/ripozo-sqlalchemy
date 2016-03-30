@@ -73,8 +73,10 @@ class CommonTest(object):
         Test getting all of the fields
         """
         for field in self.manager.fields:
-            self.assertIsInstance(self.manager.get_field_type(field), self.field_dict[field],
-                                  msg='{0} is not an instance of {1}'.format(field, self.field_dict[field]))
+            field_type = self.manager.get_field_type(field)
+            self.assertIsInstance(field_type, self.field_dict[field],
+                                  msg='field {0} {1} is not an instance of '
+                                      '{2}'.format(field, field_type, self.field_dict[field]))
 
     def test_all_fields(self):
         """
