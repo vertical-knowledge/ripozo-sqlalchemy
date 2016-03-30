@@ -1,4 +1,4 @@
-1.0.2 (unreleased)
+1.0.2 (2016-03-29)
 ==================
 
 - Pagination now automatically converts strings to integers for the page and count
