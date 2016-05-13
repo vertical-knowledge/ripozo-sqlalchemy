@@ -1,7 +1,7 @@
 1.0.3 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Field validation on retrieve_list to ensure that all filters are valid, otherwise raise a ValidationException
 
 
 1.0.2 (2016-03-29)

@@ -10,7 +10,7 @@ from datetime import datetime, date, time, timedelta
 from decimal import Decimal
 from functools import wraps
 
-from ripozo.exceptions import NotFoundException
+from ripozo.exceptions import NotFoundException, ValidationException
 from ripozo.manager_base import BaseManager
 from ripozo.resources.fields.base import BaseField
 from ripozo.resources.fields.common import StringField, IntegerField,\
@@ -191,6 +191,7 @@ class AlchemyManager(BaseManager):
         )
         pagination_pk -= 1  # logic works zero based. Pagination shouldn't be though
 
+        self._validate_fields(filters, self.list_fields)
         query = query.filter_by(**filters)
 
         if pagination_pk:
@@ -331,3 +332,23 @@ class AlchemyManager(BaseManager):
                 continue
             setattr(model, name, val)
         return model
+
+    def _validate_fields(self, requested_fields, valid_fields=None):
+        """
+        Ensures that all of the keys in the requested fields are
+        in the valid_fields.  If they are not it raises a ValidationException
+
+        :param dict{unicode, object} requested_fields: The requested fields.
+            E.g. in a retrieve_list these would be the filters
+        :param list[unicode] valid_fields: The fields that are allowed for
+            the given request
+        :raises ValidationException: When a key in the requested fields
+            is not in the r
+        """
+        valid_fields = set(valid_fields) if valid_fields is not None else set(self.fields)
+        requested_fields = set(six.iterkeys(requested_fields))
+        invalid_fields = requested_fields - valid_fields
+        if len(invalid_fields) > 0:
+            invalid_fields = ', '.join(invalid_fields)
+            raise ValidationException('The following fields are invalid for '
+                                      '{0}: {1}'.format(self.model.__name__, invalid_fields))
